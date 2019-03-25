@@ -27,13 +27,15 @@ import Part2 from "./src/screens/ChatBot/Part2";
 import Concierge from "./src/screens/Concierge";
 import Explore from "./src/screens/Explore";
 import colors from "./src/theme/Colors";
-
+import SignIn from "./src/screens/SignIn/SignIn";
+import PhoneCode from "./src/screens/SignIn/PhoneCode";
 const StackNavigator = createAppContainer(
   createStackNavigator(
     {
       Logo: LogoScreen,
       Explore: Explore,
-
+      SignIn: SignIn,
+      PhoneCode: PhoneCode,
       ProfileSuccess: ProfileSuccess,
       Main: AppContainer,
       Part2: Part2,
@@ -45,7 +47,6 @@ const StackNavigator = createAppContainer(
       IntroFour: IntroFour,
       IntroThree: IntroThree,
       IntroTwo: IntroTwo,
-
       Part2: Part2
     },
     {

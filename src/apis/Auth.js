@@ -1,7 +1,7 @@
 export const doSMS = async (phoneNumber, pin) => {
   try {
     let response = await fetch(
-      `https://inchworm-angelfish-9768.twil.io/sendSMS?phoneNumber=${phoneNumber}&pin=${pin}`,
+      `https://apricot-mole-2227.twil.io/phone_SMS?phoneNumber=${phoneNumber}&pin=${pin}`,
       {
         method: "GET"
       }

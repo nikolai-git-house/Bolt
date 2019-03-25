@@ -50,3 +50,18 @@ export const register = async profile => {
     return err;
   }
 };
+
+export const doSMS = async (phoneNumber, pin) => {
+  try {
+    let response = await fetch(
+      `https://apricot-mole-2227.twil.io/phone_SMS?phoneNumber=${phoneNumber}&pin=${pin}`,
+      {
+        method: "GET"
+      }
+    );
+    let res = await response.json();
+    return res;
+  } catch (err) {
+    return err;
+  }
+};

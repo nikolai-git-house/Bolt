@@ -6,202 +6,98 @@ import {
   AsyncStorage,
   View,
   TouchableOpacity,
-  Image,
-  WebView
+  Image
 } from "react-native";
 import { connect } from "react-redux";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
-import { getToken, logIn } from "../../apis/Auth";
-import { hexToString, clearString, getUserId } from "../../utils/functions";
-import {
-  saveOnboarding,
-  saveCurrentUserId,
-  saveToken
-} from "../../Redux/actions";
-
+import { getToken } from "../../apis/Auth";
 import {
   grant_type,
   client_id,
   client_secret,
   username,
-  password,
-  response_type,
-  redirect_uri,
-  scope,
-  display
+  password
 } from "../../utils/Constants";
-import Firebase from "../../firebasehelper";
-const patchPostMessageFunction = function() {
-  var originalPostMessage = window.postMessage;
 
-  var patchedPostMessage = function(message, targetOrigin, transfer) {
-    originalPostMessage(message, targetOrigin, transfer);
-  };
-
-  patchedPostMessage.toString = function() {
-    return String(Object.hasOwnProperty).replace(
-      "hasOwnProperty",
-      "postMessage"
-    );
-  };
-
-  window.postMessage = patchedPostMessage;
-};
-
-const patchPostMessageJsCode = "(" + String(patchPostMessageFunction) + ")();";
 class Landing extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      login_screen: false,
-      html_content: "",
-      user_session: {},
-      token: "",
-      user_id: ""
+      logged: "false"
     };
   }
   signIn = () => {
-    logIn(response_type, client_id, redirect_uri, scope, display).then(res => {
-      console.log("result", res);
-      this.setState({ login_screen: true });
-      this.setState({ html_content: res._bodyInit });
-    });
+    this.props.navigation.navigate("SignIn");
   };
   joinMember = () => {
     this.props.navigation.navigate("IntroOne");
   };
-  onEventHandler = event => {
-    //const obj = JSON.parse(data);
-    console.log("event triggered", event.nativeEvent);
-    const url = event.nativeEvent.url;
-    const obj = url.split("#");
-    const req_array = obj[1].split("&");
-    let reformattedArray = {};
-    req_array.map(item => {
-      let property = item.split("=");
-      let key = property[0];
-      let value = property[1];
-      value = clearString(value);
-      if (key == "#access_token") key = "access_token";
-      reformattedArray[key] = value;
-    });
-    //session created! Login Success!
-    this.setState({ user_session: reformattedArray });
-    console.log("request_array", reformattedArray);
-    const { access_token, id } = reformattedArray;
-    let user_id = getUserId(id);
-    console.log("user_id", user_id);
-    this.props.dispatch(saveToken(access_token));
-    this.props.dispatch(saveCurrentUserId(user_id));
-    let self = this;
-    Firebase.getUserData(user_id, function(res) {
-      console.log("res", res);
-      let name = res.username.split(" ");
-      const basic = {
-        firstname: name[0],
-        lastname: name[1],
-        email: res.email,
-        password: res.password,
-        postcode: "",
-        number: "",
-        street: "",
-        city: "",
-        phone: res.phone,
-        dob: res.DOB,
-        avatar: "",
-        user_id: user_id
-      };
-      self.props.dispatch(saveOnboarding(basic));
-
-      AsyncStorage.setItem("profile", JSON.stringify(basic));
-      setTimeout(() => {
-        self.props.navigation.navigate("Main");
-        self.setState({ login_screen: false });
-        self.setState({ html_content: "" });
-      }, 1000);
-    });
-  };
-
   render() {
-    const { login_screen, html_content } = this.state;
     return (
-      <View style={{ flex: 1 }}>
-        {login_screen === true && !!html_content && (
-          <WebView
-            injectedJavaScript={patchPostMessageJsCode}
-            originWhitelist={["*"]}
-            source={{ html: html_content }}
-            onMessage={this.onEventHandler}
+      <View
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          paddingTop: 50,
+          backgroundColor: colors.lightgrey
+        }}
+      >
+        <Logo />
+        <View style={Styles.JoinProfileContainer}>
+          <Text style={[Styles.Title, { color: colors.darkblue }]}>
+            Join Bolt
+          </Text>
+          <Image
+            source={require("../../assets/Landing/join_bolt.png")}
+            style={{ width: 80, height: 80 }}
           />
-        )}
-        {login_screen === false && (
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              paddingTop: 50,
-              backgroundColor: colors.lightgrey
-            }}
+          <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+            Take a profile test (6 mins){"\n"} Insider perks, savings & packages
+            {"\n"} Access the best properties
+          </Text>
+          <TouchableOpacity
+            onPress={this.joinMember}
+            style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
           >
-            <Logo />
-            <View style={Styles.JoinProfileContainer}>
-              <Text style={[Styles.Title, { color: colors.darkblue }]}>
-                Join Bolt
-              </Text>
-              <Image
-                source={require("../../assets/Landing/join_bolt.png")}
-                style={{ width: 80, height: 80 }}
-              />
-              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-                Take a profile test (6 mins){"\n"} Insider perks, savings &
-                packages
-                {"\n"} Access the best properties
-              </Text>
-              <TouchableOpacity
-                onPress={this.joinMember}
-                style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.darkblue,
-                    fontWeight: "500"
-                  }}
-                >
-                  Join Now
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={Styles.SignInContainer}>
-              <Text style={[Styles.Title, { color: colors.darkblue }]}>
-                Already a member
-              </Text>
-              <Image
-                source={require("../../assets/Landing/already_member.png")}
-                style={{ width: 80, height: 80 }}
-              />
-              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-                Those who have joined the club.
-              </Text>
-              <TouchableOpacity
-                onPress={this.signIn}
-                style={[Styles.CallAction, { backgroundColor: colors.grey }]}
-              >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.darkblue,
-                    fontWeight: "500"
-                  }}
-                >
-                  Sign me in
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+            <Text
+              style={{
+                fontSize: 16,
+                color: colors.darkblue,
+                fontWeight: "500"
+              }}
+            >
+              Join Now
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={Styles.SignInContainer}>
+          <Text style={[Styles.Title, { color: colors.darkblue }]}>
+            Already a member
+          </Text>
+          <Image
+            source={require("../../assets/Landing/already_member.png")}
+            style={{ width: 80, height: 80 }}
+          />
+          <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+            Those who have joined the club.
+          </Text>
+          <TouchableOpacity
+            onPress={this.signIn}
+            style={[Styles.CallAction, { backgroundColor: colors.grey }]}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: colors.darkblue,
+                fontWeight: "500"
+              }}
+            >
+              Sign me in
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }

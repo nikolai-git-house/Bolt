@@ -51,7 +51,10 @@ class PersonalProfile extends React.Component {
     super(props);
     this.state = {
       email: "",
-      key: "",
+      password: "",
+      fullname: "",
+      dob: "",
+      phonenumber: "",
       job: "photographer",
       ImageSource: require("../../../assets/avatar.png"),
       statusImage: cross_img,
@@ -64,7 +67,13 @@ class PersonalProfile extends React.Component {
       modalVisible: false,
       successVisible: false,
       errorVisible: false,
-      error_msg: ""
+      error_msg: "",
+      basic: {
+        firstname: "",
+        lastname: "",
+        dob: "",
+        phonenumber: ""
+      }
     };
     this.toggleProfile = this.toggleProfile.bind(this);
     this.toggleError = this.toggleError.bind(this);
@@ -106,7 +115,27 @@ class PersonalProfile extends React.Component {
   componentDidMount() {
     let _this = this;
     console.log("props", this.props);
-    _this.props.navigation.addListener("willFocus", this.load);
+    let basic = this.props.basic;
+    if (!basic) {
+      basic = {
+        firstname: "test",
+        lastname: "test",
+        dob: "08/12/1994",
+        phonenumber: "+971553818380"
+      };
+    } else {
+      this.setState({ isloggedIn: true });
+      const fullname =
+        basic.firstname === "" ? "" : basic.firstname + " " + basic.lastname;
+      this.setState({ fullname, fullname });
+      if (fullname !== "") this.setState({ name_statusImg: ok_img });
+      this.setState({ dob: basic.dob });
+      if (basic.dob !== "") this.setState({ dob_statusImg: ok_img });
+      this.setState({ phonenumber: basic.phonenumber });
+      if (basic.email !== "") this.setState({ email_statusImg: ok_img });
+      if (basic.password !== "") this.setState({ password_statusImg: ok_img });
+      this.setState(basic);
+    }
   }
   selectPhotoTapped() {
     let thisElement = this;
@@ -153,7 +182,7 @@ class PersonalProfile extends React.Component {
     });
   }
   Save = async () => {
-    const { email, key, ImageSource } = this.state;
+    const { email, password, ImageSource } = this.state;
     let { basic } = this.props;
     basic.email = email;
     basic.password = key;
@@ -219,16 +248,26 @@ class PersonalProfile extends React.Component {
   navigateTo = page => {
     this.props.navigation.navigate(page);
   };
+  EditName = txt => {
+    if (txt != "") this.setState({ name_statusImg: ok_img });
+    else this.setState({ name_statusImg: cross_img });
+    this.setState({ fullname: txt });
+  };
   EditEmail = txt => {
     if (isEmailValidate(txt)) this.setState({ email_statusImg: ok_img });
     else this.setState({ email_statusImg: cross_img });
     this.setState({ email: txt });
     this.setState({ updating: "true" });
   };
+  EditDOB = dob => {
+    if (dob != "") this.setState({ dob_statusImg: ok_img });
+    else this.setState({ dob_statusImg: cross_img });
+    this.setState({ dob: dob });
+  };
   EditPassword = txt => {
     if (isPasswordValidate(txt)) this.setState({ password_statusImg: ok_img });
     else this.setState({ password_statusImg: cross_img });
-    this.setState({ key: txt });
+    this.setState({ password: txt });
     this.setState({ updating: "true" });
   };
   EditJob = txt => {
@@ -259,14 +298,19 @@ class PersonalProfile extends React.Component {
   };
   render() {
     const {
-      statusImage,
+      fullname,
+      dob,
+      phonenumber,
       email,
-      key,
+      password,
       job,
+      statusImage,
       updating,
       account_creating,
       editable,
       isloggedIn,
+      dob_statusImg,
+      name_statusImg,
       email_statusImg,
       password_statusImg,
       error_msg
@@ -496,11 +540,7 @@ class PersonalProfile extends React.Component {
                   style={styles.saveButton}
                   onPress={() => this.Save()}
                 >
-                  <Image
-                    source={require("../../../assets/save.png")}
-                    style={{ width: 18, height: 18, marginRight: 10 }}
-                  />
-                  <Text>Save</Text>
+                  <Text>Activate</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -512,24 +552,33 @@ class PersonalProfile extends React.Component {
               }}
             >
               <View style={styles.Section}>
-                <Text style={styles.Name}>
-                  {basic.firstname} {basic.lastname}
-                </Text>
+                <TextInput
+                  style={styles.Name}
+                  placeholder="FirstName LastName"
+                  editable={editable}
+                  onChangeText={txt => this.EditName(txt)}
+                  value={fullname}
+                />
+                <Image
+                  source={name_statusImg}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
+                />
               </View>
               <View style={styles.Section}>
                 <Image
                   source={require("../../../assets/gift.png")}
                   style={{ width: 18, height: 18, marginRight: 10 }}
                 />
-                <Text>{basic.dob}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="DD/MM/YYYY"
+                  editable={editable}
+                  onChangeText={txt => this.EditDOB(txt)}
+                  value={dob}
+                />
                 <Image
-                  source={ok_img}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    marginRight: 10,
-                    marginLeft: "auto"
-                  }}
+                  source={dob_statusImg}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
               <View style={styles.Section}>
@@ -537,15 +586,10 @@ class PersonalProfile extends React.Component {
                   source={require("../../../assets/phone.png")}
                   style={{ width: 18, height: 18, marginRight: 10 }}
                 />
-                <Text>{basic.phone}</Text>
+                <Text>{phonenumber}</Text>
                 <Image
                   source={ok_img}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    marginRight: 10,
-                    marginLeft: "auto"
-                  }}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
               <View style={styles.Section}>
@@ -563,12 +607,7 @@ class PersonalProfile extends React.Component {
                 />
                 <Image
                   source={email_statusImg}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    marginRight: 10,
-                    marginLeft: "auto"
-                  }}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
               <View style={styles.Section}>
@@ -581,16 +620,11 @@ class PersonalProfile extends React.Component {
                   editable={editable}
                   placeholder="Your password"
                   onChangeText={txt => this.EditPassword(txt)}
-                  value={key}
+                  value={password}
                 />
                 <Image
                   source={password_statusImg}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    marginRight: 10,
-                    marginLeft: "auto"
-                  }}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
               <View style={styles.Section}>
@@ -606,12 +640,7 @@ class PersonalProfile extends React.Component {
                 />
                 <Image
                   source={ok_img}
-                  style={{
-                    width: 18,
-                    height: 18,
-                    marginRight: 10,
-                    marginLeft: "auto"
-                  }}
+                  style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
             </View>
