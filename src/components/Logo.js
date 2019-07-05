@@ -13,21 +13,20 @@ import colors from "../theme/Colors";
 export default class Bubble extends React.Component {
   render() {
     return (
-      <View style={Styles.logoContainer}>
-        <Image
-          style={{ width: 75, height: 30 }}
-          source={require("../assets/logo.png")}
-        />
-      </View>
+      <Image
+        style={Styles.logoContainer}
+        resizeMode={"contain"}
+        source={require("../assets/logo.png")}
+      />
     );
   }
 }
 const Styles = StyleSheet.create({
   logoContainer: {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "transparent"
+    position: "absolute",
+    width: 85,
+    height: 30,
+    top: 35,
+    alignItems: "center"
   }
 });

@@ -29,10 +29,15 @@ export default class TextBubble extends React.Component {
           marginBottom: 20
         }}
       >
-        <View>
+        <View style={Styles.avatar}>
           <Image
-            source={require("../assets/concierge3.png")}
-            style={{ width: 40, height: 42, marginRight: 5 }}
+            source={require("../assets/onboarding/concierge3.png")}
+            style={{
+              width: "100%",
+              height: "100%",
+              flex: 1,
+              resizeMode: "contain"
+            }}
           />
         </View>
         <View
@@ -68,5 +73,16 @@ const Styles = StyleSheet.create({
     color: colors.hotpink,
     fontFamily: "Graphik",
     marginBottom: 10
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    marginLeft: 5,
+    marginRight: 5,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    marginTop: -5
   }
 });

@@ -6,7 +6,8 @@ const colors = {
   white: "#fff",
   cardborder: "#d6d7da",
   hotpink: "#FF69B4",
-  blue: "#3498DB"
+  blue: "#3498DB",
+  green: "#bbffa8"
 };
 
 export default colors;

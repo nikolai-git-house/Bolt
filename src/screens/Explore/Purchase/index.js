@@ -27,7 +27,6 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import colors from "../../../theme/Colors";
 import Logo from "../../../components/Logo";
 const error_img = require("../../../assets/popup/error.png");
-import { getCustomerList } from "../../../apis/GoCardless";
 class Purchase extends React.Component {
   constructor(props) {
     super(props);
@@ -38,28 +37,28 @@ class Purchase extends React.Component {
       customer_id: ""
     };
   }
-  componentDidMount() {
-    const { navigation, basic } = this.props;
-    const { price, user_id } = navigation.state.params;
-    this.setState({ user_id: user_id, price: price });
-    const { email } = basic;
-    let customer_id = "";
-    getCustomerList().then(res => {
-      const result = JSON.parse(res);
+  // componentDidMount() {
+  //   const { navigation, basic } = this.props;
+  //   const { price, user_id } = navigation.state.params;
+  //   this.setState({ user_id: user_id, price: price });
+  //   const { email } = basic;
+  //   let customer_id = "";
+  //   getCustomerList().then(res => {
+  //     const result = JSON.parse(res);
 
-      result.customers.forEach(function(item) {
-        if (email === item.email) {
-          customer_id = item.id;
-          return;
-        }
-      });
-      this.setState({ customer_id: customer_id });
-      if (!customer_id) {
-        this.toggleError(true);
-      } else console.log("You have");
-      console.log("customers", JSON.parse(res));
-    });
-  }
+  //     result.customers.forEach(function(item) {
+  //       if (email === item.email) {
+  //         customer_id = item.id;
+  //         return;
+  //       }
+  //     });
+  //     this.setState({ customer_id: customer_id });
+  //     if (!customer_id) {
+  //       this.toggleError(true);
+  //     } else console.log("You have");
+  //     console.log("customers", JSON.parse(res));
+  //   });
+  // }
 
   toggleError(visible) {
     this.setState({ errorVisible: visible });

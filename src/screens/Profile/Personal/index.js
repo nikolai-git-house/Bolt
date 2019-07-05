@@ -22,16 +22,13 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Dialog, { DialogContent } from "react-native-popup-dialog";
-import { DialogComponent, SlideAnimation } from "react-native-dialog-component";
 import ImagePicker from "react-native-image-picker";
-import Icon from "react-native-vector-icons/FontAwesome";
+import RNFetchBlob from "react-native-fetch-blob";
+import ImageResizer from "react-native-image-resizer";
 import colors from "../../../theme/Colors";
-import Logo from "../../../components/Logo";
 import { Metrics } from "../../../theme";
-import { register } from "../../../functions/Auth";
 import ImgToBase64 from "react-native-image-base64";
-import { saveOnboarding } from "../../../Redux/actions/index";
+import { saveOnboarding, removeAll } from "../../../Redux/actions/index";
 import Firebase from "../../../firebasehelper";
 import {
   isSession,
@@ -39,13 +36,13 @@ import {
   isPasswordValidate,
   isJsonOk
 } from "../../../utils/functions";
-import Popup from "../../../components/Popup";
-let profile = {};
 const ok_img = require("../../../assets/success.png");
 const cross_img = require("../../../assets/error.png");
 const home_img = require("../../../assets/popup/home.png");
 const balloon_img = require("../../../assets/popup/balloon.png");
 const error_img = require("../../../assets/popup/error.png");
+const profile_img = require("../../../assets/personal/profile.png");
+const member_img = require("../../../assets/personal/member.png");
 class PersonalProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -55,6 +52,7 @@ class PersonalProfile extends React.Component {
       fullname: "",
       dob: "",
       phonenumber: "",
+      activated: false,
       job: "photographer",
       ImageSource: require("../../../assets/avatar.png"),
       statusImage: cross_img,
@@ -88,6 +86,10 @@ class PersonalProfile extends React.Component {
   toggleError(visible) {
     this.setState({ errorVisible: visible });
   }
+  openExplore = () => {
+    this.toggleSuccess(false);
+    this.navigateTo("Explore");
+  };
   load = () => {
     let _this = this;
     isSession().then(res => {
@@ -112,16 +114,26 @@ class PersonalProfile extends React.Component {
         }, 1500);
     });
   };
+  componentWillReceiveProps(props) {
+    let basic = props.basic;
+    const { email, password } = basic;
+    if (email && password) this.setState({ activated: true });
+    //this.setState({ isloggedIn: true });
+    this.setState({ email, password });
+    if (email) this.setState({ email_statusImg: ok_img });
+    if (password) this.setState({ password_statusImg: ok_img });
+  }
   componentDidMount() {
     let _this = this;
-    console.log("props", this.props);
     let basic = this.props.basic;
     if (!basic) {
       basic = {
         firstname: "test",
         lastname: "test",
         dob: "08/12/1994",
-        phonenumber: "+971553818380"
+        phonenumber: "+971553818380",
+        email: "test@gmail.com",
+        password: "test"
       };
     } else {
       this.setState({ isloggedIn: true });
@@ -132,12 +144,20 @@ class PersonalProfile extends React.Component {
       this.setState({ dob: basic.dob });
       if (basic.dob !== "") this.setState({ dob_statusImg: ok_img });
       this.setState({ phonenumber: basic.phonenumber });
-      if (basic.email !== "") this.setState({ email_statusImg: ok_img });
-      if (basic.password !== "") this.setState({ password_statusImg: ok_img });
+      if (basic.email) {
+        this.setState({ activated: true });
+        this.setState({ email_statusImg: ok_img });
+      }
+      if (basic.password) this.setState({ password_statusImg: ok_img });
+      if (basic.avatar_url) {
+        const source = { uri: basic.avatar_url };
+        this.setState({ ImageSource: source });
+      }
       this.setState(basic);
     }
   }
   selectPhotoTapped() {
+    let uid = this.props.uid;
     let thisElement = this;
     const options = {
       mediaType: "photo", // 'photo' or 'video'
@@ -173,77 +193,73 @@ class PersonalProfile extends React.Component {
           fileName: response.fileName
         };
       }
-      let source = { uri: "data:image/jpeg;base64," + response.data };
+      //let source = { uri: "data:image/jpeg;base64," + response.data };
       console.log("imgSource", source);
-      //let source = { uri: response.uri };
+      let source = { uri: response.uri };
+
       thisElement.setState({
         ImageSource: source
       });
+      this.uploadImage(response.uri, uid);
     });
   }
-  Save = async () => {
-    const { email, password, ImageSource } = this.state;
-    let { basic } = this.props;
-    basic.email = email;
-    basic.password = key;
-    basic.avatar = ImageSource;
-    console.log("profile", basic);
-    const username = basic.firstname + " " + basic.lastname;
-    profile = {
-      DOB: basic.dob,
-      email: basic.email,
-      password: basic.password,
-      phone: basic.phone,
-      username: username
-    };
-    if (isEmailValidate(email) && isPasswordValidate(key)) {
-      this.setState({ account_creating: "true" });
-      register(basic)
-        .then(res => {
-          console.log("result", res);
-          this.setState({ account_creating: "false" });
-          if (isJsonOk(res)) {
-            const result = JSON.parse(res);
-            const { userId, memberId } = result;
-            console.log("memberId", memberId);
-            profile.memberId = memberId;
-            Firebase.writeUserdata(userId, profile);
-            console.log("registration Successfully!");
-            this.setState({ statusImage: ok_img });
+  uploadImage(uri, uid) {
+    const Blob = RNFetchBlob.polyfill.Blob;
+    const fs = RNFetchBlob.fs;
+    const tempWindowXMLHttpRequest = window.XMLHttpRequest;
+    window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
+    window.Blob = Blob;
 
-            this.onSuccess(basic);
-          } else {
-            this.setState({ error_msg: res });
-            this.toggleError(true);
-          }
-        })
-        .catch(err => {
-          console.log("error", err);
-          return;
-        });
-    }
-  };
-  onSuccess = profile => {
-    this.setState({
-      isloggedIn: true,
-      editable: false,
-      updating: false
-    });
-    this.toggleSuccess(true);
-    this.LogOut();
-    //this.props.dispatch(saveOnboarding(profile));
-    //AsyncStorage.setItem("profile", JSON.stringify(profile));
-  };
-  static navigationOptions = ({ navigation }) => {
-    const { params = {} } = navigation.state;
-    let tabBarLabel = "Profile";
-    let tabBarIcon = () => (
-      <Image
-        source={require("../../../assets/concierge.png")}
-        style={{ width: 30, height: 30 }}
-      />
+    return ImageResizer.createResizedImage(uri, 300, 300, "JPEG", 80).then(
+      resizedImageUri => {
+        console.log("resizedImageUri", resizedImageUri);
+        const uploadUri =
+          Platform.OS === "ios"
+            ? resizedImageUri.uri.replace("file://", "")
+            : resizedImageUri.uri;
+        console.log("UploadUri", uploadUri);
+        let mime = "image/jpg";
+        let uploadBlob = null;
+        const path = "avatars/";
+        const imageRef = Firebase.storage()
+          .ref(path)
+          .child(`${uid}.jpg`);
+        console.log("imageRef=", imageRef);
+        return fs
+          .readFile(uploadUri, "base64")
+          .then(data => {
+            return Blob.build(data, { type: `${mime};BASE64` });
+          })
+          .then(blob => {
+            uploadBlob = blob;
+            return imageRef.put(blob, { contentType: mime });
+          })
+          .then(() => {
+            uploadBlob.close();
+            return imageRef.getDownloadURL();
+          })
+          .then(url => {
+            window.XMLHttpRequest = tempWindowXMLHttpRequest;
+            Firebase.pushProfileImage(uid, url).then(res => {
+              console.log("pushProfileImage", res);
+            });
+          });
+      }
     );
-    return { tabBarLabel, tabBarIcon };
+  }
+  Activate = () => {
+    const { uid } = this.props;
+    const { email, password } = this.state;
+    Firebase.activate(uid, email, password)
+      .then(res => {
+        this.props.dispatch(saveOnboarding(res));
+        AsyncStorage.setItem("profile", JSON.stringify(res));
+        console.log("activate result", res);
+        this.toggleSuccess(true);
+      })
+      .catch(err => {
+        console.log("Error", err);
+      });
   };
   navigateTo = page => {
     this.props.navigation.navigate(page);
@@ -257,7 +273,6 @@ class PersonalProfile extends React.Component {
     if (isEmailValidate(txt)) this.setState({ email_statusImg: ok_img });
     else this.setState({ email_statusImg: cross_img });
     this.setState({ email: txt });
-    this.setState({ updating: "true" });
   };
   EditDOB = dob => {
     if (dob != "") this.setState({ dob_statusImg: ok_img });
@@ -268,28 +283,21 @@ class PersonalProfile extends React.Component {
     if (isPasswordValidate(txt)) this.setState({ password_statusImg: ok_img });
     else this.setState({ password_statusImg: cross_img });
     this.setState({ password: txt });
-    this.setState({ updating: "true" });
   };
   EditJob = txt => {
     this.setState({ job: txt });
     this.setState({ updating: "true" });
   };
   startProfileTest = () => {
-    isSession().then(res => {
-      if (res) this.navigateTo("ProfileTest");
-      else {
-        Alert.alert(
-          "Alert",
-          "You are not ready to test profile. Please create account first",
-          [{ text: "OK", onPress: () => this.refs.email_Input.focus() }],
-          { cancelable: false }
-        );
-      }
-    });
+    this.navigateTo("ProfileTest");
   };
   LogOut = () => {
+    this.props.dispatch(removeAll());
     AsyncStorage.removeItem("profile");
-    AsyncStorage.removeItem("user_id");
+    AsyncStorage.removeItem("uid");
+    AsyncStorage.removeItem("petprofile");
+    AsyncStorage.removeItem("bikeprofile");
+    AsyncStorage.removeItem("healthprofile");
     console.log("LogOut,AsyncStorage", AsyncStorage.getItem("profile"));
     this.setState({ editable: true, isloggedIn: false });
     setTimeout(() => {
@@ -299,10 +307,13 @@ class PersonalProfile extends React.Component {
   render() {
     const {
       fullname,
+      firstname,
+      lastname,
       dob,
       phonenumber,
       email,
       password,
+      activated,
       job,
       statusImage,
       updating,
@@ -316,18 +327,34 @@ class PersonalProfile extends React.Component {
       error_msg
     } = this.state;
     let basic = this.props.basic;
+    let avatar_url = basic.avatar_url;
+    var image = (
+      <ImageBackground
+        style={styles.imageContainer}
+        source={{ uri: avatar_url }}
+      />
+    );
     return (
-      <KeyboardAwareScrollView
-        style={{ width: Metrics.screenWidth, height: Metrics.screenHeight }}
-      >
+      <KeyboardAwareScrollView style={{ width: "100%", height: "100%" }}>
         <View
           style={{
             width: "100%",
-            height: Metrics.screenHeight,
+            height: "100%",
             alignItems: "center",
-            backgroundColor: colors.lightgrey
+            backgroundColor: colors.white
           }}
         >
+          <Text
+            style={{
+              textAlign: "center",
+              fontFamily: "Quicksand",
+              fontSize: 20,
+              fontWeight: "700",
+              marginBottom: 10
+            }}
+          >
+            {firstname} {lastname}'s Personal Profile
+          </Text>
           <Modal
             animationType={"fade"}
             transparent={true}
@@ -391,9 +418,7 @@ class PersonalProfile extends React.Component {
                   perks.
                 </Text>
                 <TouchableHighlight
-                  onPress={() => {
-                    this.toggleSuccess(false);
-                  }}
+                  onPress={this.openExplore}
                   style={{
                     backgroundColor: colors.yellow,
                     width: 100,
@@ -464,52 +489,16 @@ class PersonalProfile extends React.Component {
               <ActivityIndicator size="large" color={colors.yellow} />
             </View>
           )}
-          <Image
-            source={require("../../../assets/top_bar.png")}
-            style={{ width: Metrics.screenWidth, height: 160 }}
-          />
 
           <View
             style={{
               width: "90%",
-              height: 100,
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center",
-              marginTop: -70,
-              marginBottom: 20
-            }}
-          >
-            <TouchableOpacity style={styles.buttonClk}>
-              <Image source={require("../../../assets/personal_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Personal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => this.navigateTo("Home")}
-            >
-              <Image source={require("../../../assets/home_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => this.navigateTo("Membership")}
-            >
-              <Image source={require("../../../assets/membership_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Membership</Text>
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              width: "90%",
-              height: 200,
+              height: 180,
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: colors.lightgrey,
-              marginBottom: 50,
+              justifyContent: "space-between",
+              backgroundColor: colors.white,
               paddingLeft: 20
             }}
           >
@@ -521,7 +510,10 @@ class PersonalProfile extends React.Component {
                 alignItems: "center"
               }}
             >
-              <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
+              <TouchableOpacity
+                onPress={this.selectPhotoTapped.bind(this)}
+                style={styles.avatar}
+              >
                 <ImageBackground
                   style={styles.imageContainer}
                   source={this.state.ImageSource}
@@ -529,20 +521,22 @@ class PersonalProfile extends React.Component {
               </TouchableOpacity>
               {isloggedIn && (
                 <TouchableOpacity
-                  style={styles.saveButton}
+                  style={styles.CallAction}
                   onPress={() => this.LogOut()}
                 >
                   <Text>LogOut</Text>
                 </TouchableOpacity>
               )}
-              {updating == "true" && (
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => this.Save()}
-                >
-                  <Text>Activate</Text>
-                </TouchableOpacity>
-              )}
+              {email_statusImg === ok_img &&
+                password_statusImg === ok_img &&
+                !activated && (
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={() => this.Activate()}
+                  >
+                    <Text>Activate</Text>
+                  </TouchableOpacity>
+                )}
             </View>
             <View
               style={{
@@ -552,17 +546,15 @@ class PersonalProfile extends React.Component {
               }}
             >
               <View style={styles.Section}>
-                <TextInput
-                  style={styles.Name}
-                  placeholder="FirstName LastName"
-                  editable={editable}
-                  onChangeText={txt => this.EditName(txt)}
-                  value={fullname}
-                />
                 <Image
-                  source={name_statusImg}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
+                  source={
+                    activated
+                      ? require(`../../../assets/activated.png`)
+                      : require(`../../../assets/nonactivated.png`)
+                  }
+                  style={{ width: 18, height: 18, marginRight: 10 }}
                 />
+                <Text>{activated ? "Active member" : "Non active member"}</Text>
               </View>
               <View style={styles.Section}>
                 <Image
@@ -627,106 +619,120 @@ class PersonalProfile extends React.Component {
                   style={{ width: 18, height: 18, marginLeft: "auto" }}
                 />
               </View>
-              <View style={styles.Section}>
-                <Image
-                  source={require("../../../assets/resume.png")}
-                  style={{ width: 18, height: 18, marginRight: 10 }}
-                />
-                <TextInput
-                  style={styles.input}
-                  editable={editable}
-                  onChangeText={txt => this.EditJob(txt)}
-                  value={job}
-                />
-                <Image
-                  source={ok_img}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
-                />
-              </View>
             </View>
           </View>
-
-          <View
-            style={{
-              width: "90%",
-              height: 120,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-around",
-              backgroundColor: colors.white
-            }}
-          >
-            <Text style={styles.Title}> Take a profile test</Text>
-            <TouchableOpacity
-              style={styles.CallAction}
-              onPress={this.startProfileTest}
-            >
+          {/* <View style={styles.buttonGroup}>
+            <TouchableOpacity style={styles.CallAction}>
               <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Get Started
+                Share ID
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.CallAction}>
+              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
+                Edit ID
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.CallAction}>
+              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
+                Save Entry
+              </Text>
+            </TouchableOpacity>
+          </View> */}
+          {/* <View style={styles.buttonContainer}>
+            <Image source={profile_img} style={styles.img} />
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "center"
+              }}
+            >
+              <Text style={styles.Title}> Basic Profile</Text>
+              <Text style={{ fontSize: 14 }}>Use the basic features</Text>
+            </View>
+
+            <TouchableOpacity style={styles.CallAction}>
+              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
+                Activate
               </Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.buttonContainer}>
+            <Image source={member_img} style={styles.img} />
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "center"
+              }}
+            >
+              <Text style={styles.Title}> Verified profile</Text>
+              <Text style={{ fontSize: 14 }}>Verified ID for extra access</Text>
+            </View>
+
+            <TouchableOpacity style={styles.CallAction}>
+              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
+                Take Test
+              </Text>
+            </TouchableOpacity>
+          </View> */}
         </View>
       </KeyboardAwareScrollView>
     );
   }
 }
 const styles = StyleSheet.create({
-  button: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: colors.grey,
-    borderRadius: 5,
-    shadowColor: "rgba(0,0,0, .4)", // IOS
-    shadowOffset: { height: 1, width: 1 }, // IOS
-    shadowOpacity: 1, // IOS
-    shadowRadius: 1, //IOS
-    elevation: 2 // Android,
+  Title: {
+    fontSize: 18,
+    fontFamily: "Quicksand",
+    color: colors.darkblue,
+    fontWeight: "700"
   },
-  buttonClk: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: colors.grey,
-    borderRadius: 5,
-    shadowColor: "rgba(0,0,0, .4)", // IOS
-    shadowOffset: { height: 8, width: 8 }, // IOS
-    shadowOpacity: 0.4, // IOS
-    shadowRadius: 0.2, //IOS
-    elevation: 2 // Android,
-  },
-  Title: { fontSize: 20, fontFamily: "Quicksand" },
   CallAction: {
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: colors.yellow
-  },
-  containerbusiness: {
-    paddingLeft: 15,
-    paddingRight: 35,
     flexDirection: "row",
-    paddingTop: 17,
-    paddingBottom: 10
+    justifyContent: "center",
+    alignItems: "center",
+    width: 100,
+    height: 30,
+    borderRadius: 10,
+    marginBottom: 5,
+    borderColor: colors.darkblue,
+    borderWidth: 1,
+    backgroundColor: colors.lightgrey,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2
   },
-  containergroup: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingBottom: 20,
-    flexDirection: "row"
+  avatar: {
+    marginTop: 20,
+    shadowOffset: { height: 1, width: 1 },
+    shadowColor: colors.darkblue,
+    shadowOpacity: 0.2
   },
-  containerappsettings: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 15,
-    paddingBottom: 25,
-    flexDirection: "row"
+  img: {
+    width: 55,
+    height: 55
+  },
+  buttonGroup: {
+    width: "90%",
+    height: 30,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    backgroundColor: colors.white
+  },
+  buttonContainer: {
+    width: "90%",
+    height: 70,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.white,
+    marginTop: 10
   },
   modal: {
     position: "absolute",
@@ -742,15 +748,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     padding: 10
   },
-  textFieldContainer: {
-    flex: 1,
-    //paddingLeft:10
-    alignContent: "center",
-    justifyContent: "center"
-  },
   imageContainer: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
+    borderRadius: 80,
     overflow: "hidden",
     marginBottom: 10
   },
@@ -760,15 +761,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 80,
     height: 30,
-    borderRadius: 20,
+    borderRadius: 10,
     marginBottom: 5,
-    backgroundColor: colors.yellow
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(33, 33, 39, 0.7)",
-    borderRadius: 50,
-    overflow: "hidden"
+    borderColor: colors.darkblue,
+    borderWidth: 1,
+    backgroundColor: colors.lightgrey,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2
   },
   Section: {
     flexDirection: "row",
@@ -782,45 +782,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.darkblue
   },
-  Icon: {
-    padding: 10
-  },
   input: {
     flex: 1,
     paddingRight: 10,
     paddingLeft: 10,
     fontSize: 14,
     backgroundColor: "transparent"
-  },
-  fab: {
-    justifyContent: "center",
-    alignContent: "center",
-    ...Platform.select({
-      ios: {
-        backgroundColor: "#ecd9fc",
-        height: 50,
-        width: 70,
-        borderRadius: 10
-      },
-      android: {
-        backgroundColor: "#9513fe",
-        height: 60,
-        width: 60,
-        borderRadius: 30
-      }
-    }),
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    elevation: 3,
-    zIndex: 5,
-    overflow: "hidden"
-  },
-  tabStyle: {
-    backgroundColor: "#f0eff5"
-  },
-  activeTabTextStyle: {
-    color: "#fff"
   }
 });
 function mapDispatchToProps(dispatch) {
@@ -830,6 +797,7 @@ function mapDispatchToProps(dispatch) {
 }
 function mapStateToProps(state) {
   return {
+    uid: state.uid,
     basic: state.basic
   };
 }

@@ -18,8 +18,15 @@ export default class Wallet extends React.Component {
   }
   render() {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text>Comming soon..</Text>
+      <View
+        style={{
+          width: "100%",
+          height: Metrics.screenHeight,
+          alignItems: "center",
+          backgroundColor: colors.lightgrey
+        }}
+      >
+        <Logo />
       </View>
     );
   }

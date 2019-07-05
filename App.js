@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View, Image } from "react-native";
+import { Platform, StyleSheet, AppState } from "react-native";
 import { createAppContainer, createStackNavigator } from "react-navigation";
 import { Provider } from "react-redux";
 import store from "./src/Redux";
@@ -15,7 +15,6 @@ import store from "./src/Redux";
 import LogoScreen from "./src/screens/LogoScreen";
 import AppContainer from "./route";
 import Landing from "./src/screens/Landing";
-import Onboarding from "./src/screens/ChatBot/Onboarding";
 import IntroOne from "./src/screens/Intro/IntroOne";
 import IntroTwo from "./src/screens/Intro/IntroTwo";
 import IntroThree from "./src/screens/Intro/IntroThree";
@@ -33,17 +32,18 @@ const StackNavigator = createAppContainer(
   createStackNavigator(
     {
       Logo: LogoScreen,
+      Concierge: Concierge,
+      Main: AppContainer,
+      Onboard: Onboard,
       Explore: Explore,
       SignIn: SignIn,
       PhoneCode: PhoneCode,
       ProfileSuccess: ProfileSuccess,
-      Main: AppContainer,
+
       Part2: Part2,
       ProfileTest: ProfileTest,
       Landing: Landing,
-      Onboard: Onboard,
       IntroOne: IntroOne,
-      Onboarding: Onboarding,
       IntroFour: IntroFour,
       IntroThree: IntroThree,
       IntroTwo: IntroTwo,
@@ -62,6 +62,18 @@ export default class App extends Component {
   constructor(props) {
     super(props);
   }
+  componentDidMount() {
+    AppState.addEventListener("change", this.handleAppStateChange);
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener("change", this.handleAppStateChange);
+  }
+  handleAppStateChange = nextAppState => {
+    if (nextAppState === "inactive") {
+      console.log("the app is closed");
+    }
+  };
   render() {
     return (
       <Provider store={store}>

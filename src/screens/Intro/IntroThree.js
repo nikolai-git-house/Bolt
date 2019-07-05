@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    paddingTop: 50,
+    paddingTop: 90,
     backgroundColor: colors.lightgrey
   },
   subcontainer: {

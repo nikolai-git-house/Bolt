@@ -14,8 +14,9 @@ import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
 import Firebase from "../../firebasehelper";
 import PhoneInput from "react-native-phone-input";
+import Metrics from "../../theme/Metrics";
 import { doSMS } from "../../functions/Auth";
-
+import { clearZero } from "../../utils/functions";
 class SignIn extends React.Component {
   constructor(props) {
     super(props);
@@ -30,6 +31,9 @@ class SignIn extends React.Component {
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
   };
+  GoBack = () => {
+    this.props.navigation.goBack();
+  };
   EditPhoneNumber = number => {
     this.setState({ phone: number });
   };
@@ -37,23 +41,26 @@ class SignIn extends React.Component {
     const { phone } = this.state;
     let pin = this.createPincode();
     pin = pin.toString();
+    console.log("pin", pin);
+    let phonenumber = clearZero(phone);
+    console.log("phonenumber", phonenumber);
     let response = doSMS(phone, pin);
     console.log("response", response);
-    this.navigateTo("PhoneCode", { phone: phone, pin: pin });
+    this.navigateTo("PhoneCode", { phone: phonenumber, pin: pin });
   };
   render() {
     const { phone } = this.state;
     return (
       <View
         style={{
-          display: "flex",
-          flexDirection: "column",
+          width: "100%",
+          height: Metrics.screenHeight,
           alignItems: "center",
-          paddingTop: 50,
-          backgroundColor: colors.white
+          backgroundColor: colors.lightgrey
         }}
       >
         <Logo />
+
         <PhoneInput
           style={{
             marginTop: 180,
@@ -68,43 +75,48 @@ class SignIn extends React.Component {
           onChangePhoneNumber={this.EditPhoneNumber}
           value={phone}
         />
-        <TouchableOpacity
-          style={{
-            backgroundColor: colors.yellow,
-            padding: 20,
-            marginTop: 50,
-            borderRadius: 20
-          }}
-          onPress={this.SignIn}
-        >
+        <TouchableOpacity style={styles.CalltoAction} onPress={this.SignIn}>
           <Text
-            style={{ fontSize: 25, fontFamily: "Quicksand", fontWeight: "400" }}
+            style={{
+              fontSize: 25,
+              fontFamily: "Quicksand",
+              fontWeight: "400"
+            }}
           >
             Sign In
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "transparent",
+            marginTop: 50
+          }}
+          onPress={this.GoBack}
+        >
+          <Text
+            style={{
+              fontSize: 25,
+              fontFamily: "Quicksand",
+              fontWeight: "400",
+              color: colors.blue
+            }}
+          >
+            Back
           </Text>
         </TouchableOpacity>
       </View>
     );
   }
 }
-const Styles = StyleSheet.create({
-  input: {
-    flex: 1,
-    paddingRight: 10,
-    paddingLeft: 10,
-    fontSize: 14,
-    backgroundColor: "transparent"
-  },
-  Title: { fontSize: 30, fontFamily: "Quicksand", fontWeight: "200" },
-  SubTitle: { fontSize: 15, fontFamily: "Quicksand", textAlign: "center" },
-  CallAction: {
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    borderColor: colors.cardborder
+const styles = StyleSheet.create({
+  CalltoAction: {
+    backgroundColor: colors.yellow,
+    padding: 20,
+    marginTop: 50,
+    borderRadius: 20,
+    shadowOffset: { height: 1, width: 1 },
+    shadowColor: colors.darkblue,
+    shadowOpacity: 0.2
   }
 });
 function mapDispatchToProps(dispatch) {

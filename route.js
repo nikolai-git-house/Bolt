@@ -12,7 +12,7 @@ import Profile from "./src/screens/Profile";
 import Wallet from "./src/screens/Wallet";
 import PersonalProfile from "./src/screens/Profile/Personal";
 import HomeProfile from "./src/screens/Profile/Home";
-import MembershipProfile from "./src/screens/Profile/Membership";
+import GroupProfile from "./src/screens/Profile/Group";
 
 const profile_img = require("./src/assets/profile.png");
 const explore_img = require("./src/assets/explore.png");
@@ -20,14 +20,17 @@ const concierge_img = require("./src/assets/concierge.png");
 const diary_img = require("./src/assets/diary.png");
 const wallet_img = require("./src/assets/wallet.png");
 let routeConfigs = {
-  Profile: {
-    screen: Profile,
+  Concierge: {
+    screen: Concierge,
     navigationOptions: ({ navigation }) => {
-      let tabBarLabel = "Profile";
+      let tabBarLabel = "Concierge";
       let tabBarIcon = () => (
-        <Image source={profile_img} style={{ width: 26, height: 26 }} />
+        <Image source={concierge_img} style={{ width: 28, height: 36 }} />
       );
-      return { tabBarLabel, tabBarIcon };
+      let tabBarOnPress = () => {
+        navigation.navigate("Concierge");
+      };
+      return { tabBarLabel, tabBarIcon, tabBarOnPress };
     }
   },
   Explore: {
@@ -35,41 +38,44 @@ let routeConfigs = {
     navigationOptions: ({ navigation }) => {
       let tabBarLabel = "Explore";
       let tabBarIcon = () => (
-        <Image source={explore_img} style={{ width: 26, height: 26 }} />
+        <Image source={explore_img} style={{ width: 28, height: 28 }} />
       );
       return { tabBarLabel, tabBarIcon };
     }
   },
-  Concierge: {
-    screen: Concierge,
+
+  Profile: {
+    screen: Profile,
     navigationOptions: ({ navigation }) => {
-      let tabBarLabel = "Concierge";
+      let tabBarLabel = "Profile";
       let tabBarIcon = () => (
-        <Image source={concierge_img} style={{ width: 30, height: 36 }} />
+        <Image source={profile_img} style={{ width: 28, height: 28 }} />
       );
-      return { tabBarLabel, tabBarIcon };
-    }
-  },
-  Diary: {
-    screen: Diary,
-    navigationOptions: ({ navigation }) => {
-      let tabBarLabel = "Diary";
-      let tabBarIcon = () => (
-        <Image source={diary_img} style={{ width: 26, height: 26 }} />
-      );
-      return { tabBarLabel, tabBarIcon };
-    }
-  },
-  Wallet: {
-    screen: Wallet,
-    navigationOptions: ({ navigation }) => {
-      let tabBarLabel = "Wallet";
-      let tabBarIcon = () => (
-        <Image source={wallet_img} style={{ width: 26, height: 26 }} />
-      );
+
       return { tabBarLabel, tabBarIcon };
     }
   }
+
+  // Diary: {
+  //   screen: Diary,
+  //   navigationOptions: ({ navigation }) => {
+  //     let tabBarLabel = "Diary";
+  //     let tabBarIcon = () => (
+  //       <Image source={diary_img} style={{ width: 26, height: 26 }} />
+  //     );
+  //     return { tabBarLabel, tabBarIcon };
+  //   }
+  // },
+  // Wallet: {
+  //   screen: Wallet,
+  //   navigationOptions: ({ navigation }) => {
+  //     let tabBarLabel = "Wallet";
+  //     let tabBarIcon = () => (
+  //       <Image source={wallet_img} style={{ width: 26, height: 26 }} />
+  //     );
+  //     return { tabBarLabel, tabBarIcon };
+  //   }
+  // }
 };
 let tabNavigatorConfig = {
   tabBarPosition: "bottom",

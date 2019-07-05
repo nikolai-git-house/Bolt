@@ -5,6 +5,10 @@ function addZero(i) {
   }
   return i;
 }
+export const clearZero = function(str) {
+  if (str.charAt(3) === "0") str = str.replace("0", "");
+  return str;
+};
 export function getCurrentTime() {
   var d = new Date();
   var h = addZero(d.getHours());
@@ -15,10 +19,21 @@ export function getCurrentTime() {
 export async function isSession() {
   try {
     const result = await AsyncStorage.getItem("profile");
-    return result;
+    const uid = await AsyncStorage.getItem("uid");
+    const petprofile = await AsyncStorage.getItem("petprofile");
+    const bikeprofile = await AsyncStorage.getItem("bikeprofile");
+    const healthprofile = await AsyncStorage.getItem("healthprofile");
+    const homeprofile = await AsyncStorage.getItem("homeprofile");
+    const profile = JSON.parse(result);
+    profile["uid"] = uid;
+    profile["pet"] = petprofile;
+    profile["bike"] = bikeprofile;
+    profile["health"] = healthprofile;
+    profile["home"] = homeprofile;
+    return profile;
   } catch (err) {
-    console.log(err);
-    return err;
+    console.log("error", err);
+    throw Error(err);
   }
 }
 export function isEmailValidate(email) {
@@ -48,6 +63,14 @@ export function isDateValidate(date) {
 }
 export function numberWithCommas(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+export function removeItemfromArray(array, item) {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] === item) {
+      array.splice(i, 1);
+    }
+  }
+  return array;
 }
 export function isJsonOk(text) {
   if (
@@ -88,4 +111,31 @@ export function clearString(str) {
 export function getUserId(str) {
   let array = str.split("/");
   return array.pop();
+}
+export function generate_token(length) {
+  //edit the token allowed characters
+  var a = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split(
+    ""
+  );
+  var b = [];
+  for (var i = 0; i < length; i++) {
+    var j = (Math.random() * (a.length - 1)).toFixed(0);
+    b[i] = a[j];
+  }
+  return b.join("");
+}
+export function filterArrayByKey(arr, key) {
+  var a = arr.reduce(function(accumulator, current) {
+    if (checkIfAlreadyExist(current)) {
+      return accumulator;
+    } else {
+      return accumulator.concat([current]);
+    }
+    function checkIfAlreadyExist(currentVal) {
+      return accumulator.some(function(item) {
+        return item[key] === currentVal[key];
+      });
+    }
+  }, []);
+  return a;
 }

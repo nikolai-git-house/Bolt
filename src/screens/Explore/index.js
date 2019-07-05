@@ -10,9 +10,11 @@ import {
 } from "react-native";
 import { createAppContainer, createStackNavigator } from "react-navigation";
 
+import Landing from "./Landing";
 import Main from "./Main";
 import Pack from "./Pack";
 import Purchase from "./Purchase";
+import DirectDebit from "./DirectDebitSetup";
 
 export default createStackNavigator(
   {
@@ -24,6 +26,9 @@ export default createStackNavigator(
     },
     Purchase: {
       screen: Purchase
+    },
+    DirectDebit: {
+      screen: DirectDebit
     }
   },
   {

@@ -13,7 +13,14 @@ import FadeInView from "react-native-fade-in-view";
 import { connect } from "react-redux";
 import colors from "../../theme/Colors";
 import { Metrics } from "../../theme";
-import { saveOnboarding, saveCurrentUserId } from "../../Redux/actions/index";
+import {
+  saveOnboarding,
+  saveUID,
+  savePet,
+  saveBike,
+  saveHealth,
+  saveHome
+} from "../../Redux/actions/index";
 import { isSession } from "../../utils/functions";
 
 class LogoScreen extends React.Component {
@@ -39,17 +46,24 @@ class LogoScreen extends React.Component {
     }).start(() => this.Start());
   }
   Start = () => {
-    isSession().then(res => {
-      console.log("res", res);
-      if (res) {
-        let basic = JSON.parse(res);
-        console.log("basic", basic);
-        const user_id = basic.user_id;
-        this.props.dispatch(saveOnboarding(basic));
-        this.props.dispatch(saveCurrentUserId(user_id));
-        this.props.navigation.navigate("Main");
-      } else this.props.navigation.navigate("Landing");
-    });
+    isSession()
+      .then(res => {
+        console.log("LogoScreen res", res);
+        if (res) {
+          console.log("Result is true");
+          this.props.dispatch(saveOnboarding(res));
+          this.props.dispatch(saveUID(res.uid));
+          this.props.dispatch(savePet(JSON.parse(res.pet)));
+          this.props.dispatch(saveBike(JSON.parse(res.bike)));
+          this.props.dispatch(saveHealth(JSON.parse(res.health)));
+          this.props.dispatch(saveHome(JSON.parse(res.home)));
+          this.props.navigation.navigate("Main");
+        } else this.props.navigation.navigate("Landing");
+      })
+      .catch(err => {
+        console.log("Error", err);
+        this.props.navigation.navigate("Landing");
+      });
   };
   componentWillMount() {
     this.fadeIn();
@@ -70,20 +84,11 @@ class LogoScreen extends React.Component {
           <View>
             <Image
               source={require("../../assets/logo.png")}
-              style={{ width: 150, height: 60 }}
+              style={{ width: 170, height: 60 }}
+              resizeMode={"contain"}
             />
           </View>
         </Animated.View>
-        {/* <FadeInView
-          duration={3000}
-          style={{ alignItems: "center" }}
-          onFadeComplete={() => alert("Ready")}
-        >
-          <Image
-            source={require("../../assets/logo.png")}
-            style={{ width: 150, height: 60 }}
-          />
-        </FadeInView> */}
       </View>
     );
   }
@@ -96,7 +101,8 @@ function mapDispatchToProps(dispatch) {
 function mapStateToProps(state) {
   return {
     basic: state.basic,
-    user_id: state.user_id
+    uid: state.uid,
+    pet: state.pet
   };
 }
 export default connect(

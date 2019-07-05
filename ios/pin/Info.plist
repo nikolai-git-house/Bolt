@@ -8,6 +8,8 @@
 	<string>Bolt</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleGetInfoString</key>
+	<string></string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -17,11 +19,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.3</string>
+	<string>3.7</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>8</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -37,8 +41,10 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Our application requires user phone number verification by showing phone number input. This input is initiated based on location of app. </string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Our application requires user phone number verification by showing phone number input. This input is initiated based on location of app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Our application needs permission to write photos</string>
 	<key>UIAppFonts</key>

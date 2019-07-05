@@ -32,7 +32,7 @@ class Onboard extends React.Component {
     console.log("username", username);
     return (
       <View style={styles.maincontainer}>
-        <Logo />
+        {/* <Logo /> */}
         <WebView
           originWhitelist={["*"]}
           source={{ uri: "./external/testpart1/index.html" }}

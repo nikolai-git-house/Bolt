@@ -15,29 +15,43 @@ import { sliderWidth, itemWidth } from "../theme/Styles";
 import PackCard from "../components/PackCard";
 const IS_ANDROID = Platform.OS === "android";
 const SLIDER_1_FIRST_ITEM = 0;
-let packages = [];
+let all_packages = [];
 Firebase.getPackagesData(function(res) {
-  for (var i in res) packages.push(res[i]);
-  console.log("packages", packages);
+  for (var i in res) all_packages.push(res[i]);
 });
 export default class PackCarousel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeSlide: SLIDER_1_FIRST_ITEM
+      activeSlide: SLIDER_1_FIRST_ITEM,
+      packages: []
     };
   }
   _renderItem({ item, index }) {
     return <PackCard data={item} key={index} />;
   }
-
+  componentDidMount() {
+    console.log("renter_owner", this.props.renter_owner);
+    const renter_owner = this.props.renter_owner;
+    let packages = [];
+    for (var i in all_packages) {
+      if (all_packages[i].for === 0 || all_packages[i].for === renter_owner) {
+        const order = parseInt(all_packages[i].order);
+        packages[order] = all_packages[i];
+        //packages.push(all_packages[i]);
+      }
+    }
+    this.setState({ packages: packages });
+  }
   get pagination() {
-    const { activeSlide } = this.state;
+    const { activeSlide, packages } = this.state;
     const { getActive } = this.props;
     if (packages) {
       const isgroup = packages[activeSlide].isgroup;
       const price = packages[activeSlide].price;
-      getActive(isgroup, price);
+      const imgName = packages[activeSlide].img_name;
+      const pkgName = packages[activeSlide].caption;
+      getActive(isgroup, price, imgName, pkgName);
     }
     return (
       <Pagination
@@ -65,13 +79,14 @@ export default class PackCarousel extends React.Component {
   }
 
   render() {
-    const { activeSlide } = this.state;
+    const { activeSlide, packages, coming_flag } = this.state;
 
     return (
       <View style={{ flex: 1 }}>
-        {this.pagination}
+        {packages.length > 0 && this.pagination}
         <Carousel
           ref={c => (this._slider1Ref = c)}
+          removeClippedSubviews={false}
           data={packages}
           renderItem={this._renderItem}
           onSnapToItem={index => this.setState({ activeSlide: index })}

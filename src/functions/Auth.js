@@ -65,3 +65,18 @@ export const doSMS = async (phoneNumber, pin) => {
     return err;
   }
 };
+
+export const sendInvitation = async (phoneNumber, username) => {
+  try {
+    let response = await fetch(
+      `https://apricot-mole-2227.twil.io/sendInvitation?phoneNumber=${phoneNumber}&username=${username}`,
+      {
+        method: "GET"
+      }
+    );
+    let res = await response.json();
+    return res;
+  } catch (err) {
+    return err;
+  }
+};

@@ -9,7 +9,9 @@ import {
   Image
 } from "react-native";
 import { connect } from "react-redux";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import colors from "../../theme/Colors";
+import Metrics from "../../theme/Metrics";
 import Logo from "../../components/Logo";
 import { getToken } from "../../apis/Auth";
 import {
@@ -35,70 +37,87 @@ class Landing extends React.Component {
   };
   render() {
     return (
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          paddingTop: 50,
-          backgroundColor: colors.lightgrey
-        }}
+      <KeyboardAwareScrollView
+        style={{ width: Metrics.screenWidth, height: Metrics.screenHeight }}
       >
-        <Logo />
-        <View style={Styles.JoinProfileContainer}>
-          <Text style={[Styles.Title, { color: colors.darkblue }]}>
-            Join Bolt
-          </Text>
-          <Image
-            source={require("../../assets/Landing/join_bolt.png")}
-            style={{ width: 80, height: 80 }}
-          />
-          <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-            Take a profile test (6 mins){"\n"} Insider perks, savings & packages
-            {"\n"} Access the best properties
-          </Text>
-          <TouchableOpacity
-            onPress={this.joinMember}
-            style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
+        <View
+          style={{
+            width: "100%",
+            height: Metrics.screenHeight,
+            alignItems: "center",
+            backgroundColor: colors.lightgrey
+          }}
+        >
+          <Logo />
+          <View
+            style={{
+              position: "absolute",
+              top: 90,
+              left: 0,
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              backgroundColor: colors.lightgrey
+            }}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                color: colors.darkblue,
-                fontWeight: "500"
-              }}
-            >
-              Join Now
-            </Text>
-          </TouchableOpacity>
+            <View style={Styles.JoinProfileContainer}>
+              <Text style={[Styles.Title, { color: colors.darkblue }]}>
+                Join Bolt
+              </Text>
+              <Image
+                source={require("../../assets/Landing/join_bolt.png")}
+                style={{ width: 60, height: 60 }}
+              />
+              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+                Take a profile test (6 mins){"\n"} Insider perks, savings &
+                packages
+                {"\n"} Access the best properties
+              </Text>
+              <TouchableOpacity
+                onPress={this.joinMember}
+                style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.darkblue,
+                    fontWeight: "500"
+                  }}
+                >
+                  Join Now
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={Styles.SignInContainer}>
+              <Text style={[Styles.Title, { color: colors.darkblue }]}>
+                Already a member
+              </Text>
+              <Image
+                source={require("../../assets/Landing/already_member.png")}
+                style={{ width: 60, height: 60 }}
+              />
+              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+                Those who have joined the club.
+              </Text>
+              <TouchableOpacity
+                onPress={this.signIn}
+                style={[Styles.CallAction, { backgroundColor: colors.grey }]}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.darkblue,
+                    fontWeight: "500"
+                  }}
+                >
+                  Sign me in
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-        <View style={Styles.SignInContainer}>
-          <Text style={[Styles.Title, { color: colors.darkblue }]}>
-            Already a member
-          </Text>
-          <Image
-            source={require("../../assets/Landing/already_member.png")}
-            style={{ width: 80, height: 80 }}
-          />
-          <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-            Those who have joined the club.
-          </Text>
-          <TouchableOpacity
-            onPress={this.signIn}
-            style={[Styles.CallAction, { backgroundColor: colors.grey }]}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: colors.darkblue,
-                fontWeight: "500"
-              }}
-            >
-              Sign me in
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </KeyboardAwareScrollView>
     );
   }
 }
@@ -106,36 +125,28 @@ const Styles = StyleSheet.create({
   SignInContainer: {
     backgroundColor: colors.white,
     borderRadius: 10,
-    height: "45%",
+    height: 250,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "space-around",
     color: colors.darkblue,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-    marginLeft: 10,
-    marginRight: 10,
+    padding: 10,
+    margin: 10,
     borderWidth: 0.5,
     borderColor: colors.cardborder
   },
   JoinProfileContainer: {
     backgroundColor: colors.grey,
     borderRadius: 10,
-    height: "45%",
+    height: 250,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "space-around",
     color: colors.darkblue,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-    marginLeft: 10,
-    marginRight: 10,
+    padding: 10,
+    margin: 10,
     borderWidth: 0.5,
     borderColor: colors.cardborder
   },

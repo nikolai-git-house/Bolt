@@ -4,27 +4,21 @@ import {
   Text,
   View,
   TouchableOpacity,
-  TouchableHighlight,
-  StatusBar,
   Image,
   ImageBackground,
   ToolbarAndroid,
   AsyncStorage,
   Platform,
-  Button,
-  Alert,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Dimensions,
-  TextInput
+  TextInput,
+  WebView
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import SegmentedControlTab from "react-native-segmented-control-tab";
-import ImagePicker from "react-native-image-picker";
-import Icon from "react-native-vector-icons/FontAwesome";
+import Firebase from "../../../firebasehelper";
+import { saveHome } from "../../../Redux/actions/index";
 import colors from "../../../theme/Colors";
 import Logo from "../../../components/Logo";
+import StickItem from "../../../components/StickItem";
 import { Metrics } from "../../../theme";
 const default_avatar = require("../../../assets/plus.png");
 const ok_img = require("../../../assets/success.png");
@@ -39,33 +33,31 @@ class HomeProfile extends React.Component {
       bedroom_statusImg: error_img,
       price_statusImg: error_img,
       localUri: null,
-      imagesArray: [
-        require("../../../assets/avatar.png"),
-        default_avatar,
-        default_avatar,
-        default_avatar
-      ],
       homepack: "Activate",
-      petpack: "Bolt-on"
+      petpack: "Bolt-on",
+      homeprofile: {},
+      webview: true
     };
     this.selectPhotoTapped = this.selectPhotoTapped.bind(this);
   }
-
+  componentDidMount() {
+    const { home } = this.props;
+    console.log("home", home);
+    if (home && Object.keys(home).length !== 0) {
+      console.log("home is not empty");
+      this.setState({ homeprofile: home });
+      this.setState({ webview: false });
+      let keyboardScrollView = this.refs.KeyboardAwareScrollView;
+      if (keyboardScrollView) keyboardScrollView.update();
+    } else {
+      console.log("home is empty");
+      this.setState({ webview: true });
+    }
+  }
   selectPhotoTapped(id) {
     let thisElement = this;
     console.log(id);
   }
-  static navigationOptions = ({ navigation }) => {
-    const { params = {} } = navigation.state;
-    let tabBarLabel = "Profile";
-    let tabBarIcon = () => (
-      <Image
-        source={require("../../../assets/concierge.png")}
-        style={{ width: 30, height: 30 }}
-      />
-    );
-    return { tabBarLabel, tabBarIcon };
-  };
   navigateTo = page => {
     this.props.navigation.navigate(page);
   };
@@ -75,287 +67,206 @@ class HomeProfile extends React.Component {
   onBolt_PetPack = () => {
     this.setState({ petpack: "Bolt-off" });
   };
+  onLoadFinished = () => {
+    if (this.webview) {
+      console.log("posted message");
+      this.webview.postMessage("home_botMessages");
+    }
+  };
+  onEventHandler = data => {
+    const { homeprofile } = this.state;
+    const { uid } = this.props;
+    let temp = homeprofile;
+    const obj = JSON.parse(data);
+    const key = Object.keys(obj)[0];
+    console.log("key", key);
+    console.log("value", obj[key]);
+    temp[key] = obj[key];
+    this.setState({ homeprofile: temp });
+
+    console.log(obj);
+    if (obj.onboardingFinished) {
+      temp["uid"] = uid;
+      this.setState({ homeprofile: temp });
+      Firebase.home_signup(temp)
+        .then(res => {
+          this.props.dispatch(saveHome(temp));
+          AsyncStorage.setItem("homeprofile", JSON.stringify(temp));
+        })
+        .catch(err => {
+          alert(err);
+        });
+      setTimeout(() => this.setState({ webview: false }), 1000);
+    } else this.setState(obj);
+    console.log("homeprofile", homeprofile);
+  };
   render() {
     const { basic } = this.props;
     const imgs = this.state.imagesArray;
-    const {
-      homepack,
-      petpack,
-      accomodation_statusImg,
-      location_statusImg,
-      bedroom_statusImg,
-      price_statusImg
-    } = this.state;
+    const { homepack, webview, homeprofile } = this.state;
     return (
-      <KeyboardAwareScrollView
-        style={{ width: Metrics.screenWidth, height: Metrics.screenHeight }}
-      >
-        <View
-          style={{
-            width: "100%",
-            height: "100%",
-            alignItems: "center",
-            backgroundColor: colors.lightgrey
-          }}
-        >
-          <Image
-            source={require("../../../assets/top_bar.png")}
-            style={{ width: Metrics.screenWidth, height: 160 }}
+      <View style={styles.maincontainer}>
+        {webview && (
+          <WebView
+            ref={r => (this.webview = r)}
+            originWhitelist={["*"]}
+            source={{ uri: "./external/onboarding/index.html" }}
+            onMessage={event => this.onEventHandler(event.nativeEvent.data)}
+            startInLoadingState
+            javaScriptEnabled
+            onLoad={this.onLoadFinished}
+            mixedContentMode="always"
+            thirdPartyCookiesEnabled
+            allowUniversalAccessFromFileURLs
           />
-          <View
-            style={{
-              width: "90%",
-              height: 100,
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center",
-              marginTop: -70,
-              marginBottom: 20
-            }}
-          >
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => this.navigateTo("Personal")}
+        )}
+        {!webview && (
+          <KeyboardAwareScrollView style={{ width: "100%", height: "100%" }}>
+            <View
+              style={{
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
+                backgroundColor: colors.white
+              }}
             >
-              <Image source={require("../../../assets/personal_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Personal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonClk}>
-              <Image source={require("../../../assets/home_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => this.navigateTo("Membership")}
-            >
-              <Image source={require("../../../assets/membership_icon.png")} />
-              <Text style={{ fontSize: 12 }}>Membership</Text>
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              width: "100%",
-              height: 100,
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center"
-            }}
-          >
-            {imgs.map(obj => {
-              return (
-                <TouchableOpacity
-                  key={obj.key}
-                  onPress={this.selectPhotoTapped("2")}
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontFamily: "Quicksand",
+                  fontSize: 20,
+                  fontWeight: "700",
+                  marginBottom: 10
+                }}
+              >
+                My Home Profile
+              </Text>
+              <View
+                style={{
+                  width: "90%",
+                  height: 120,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  paddingTop: 10,
+                  paddingBottom: 10,
+                  borderBottomColor: colors.grey,
+                  borderBottomWidth: 1
+                }}
+              >
+                <StickItem
+                  value={basic.renter_owner}
+                  checked={true}
+                  img={require("../../../assets/home/user.png")}
+                />
+                <StickItem
+                  value={homeprofile.address}
+                  checked={true}
+                  img={require("../../../assets/home/placeholder.png")}
+                />
+                <StickItem
+                  value={homeprofile.bedrooms}
+                  checked={true}
+                  img={require("../../../assets/home/bed.png")}
+                />
+              </View>
+              <View
+                style={{
+                  width: "90%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 10,
+                  marginTop: 10,
+                  marginBottom: 10,
+                  backgroundColor: colors.white
+                }}
+              >
+                <View
+                  style={{
+                    width: "100%",
+                    height: 50,
+                    marginBottom: 5,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center"
+                  }}
                 >
-                  <ImageBackground style={styles.imageContainer} source={obj} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          <View
-            style={{
-              width: "90%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 10,
-              marginBottom: 10,
-              backgroundColor: colors.white
-            }}
-          >
-            <View
-              style={{
-                width: "100%",
-                height: 50,
-                marginBottom: 5,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center"
-              }}
-            >
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  width: 150
-                }}
-              >
-                <Image
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginTop: 5,
-                    marginLeft: 10,
-                    marginRight: 10
-                  }}
-                  source={require("../../../assets/home.png")}
+                  <View
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      width: 150
+                    }}
+                  >
+                    <Image
+                      style={{
+                        width: 40,
+                        height: 40,
+                        marginTop: 5,
+                        marginLeft: 10,
+                        marginRight: 10
+                      }}
+                      source={require("../../../assets/home.png")}
+                    />
+                    <Text style={{ fontSize: 16 }}>Home Pack</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={
+                      homepack == "Activate" ? styles.CtoA : styles.CtoA_Clk
+                    }
+                    onPress={this.onActivate_HomePack}
+                  >
+                    <Text style={{ fontSize: 14, color: colors.darkblue }}>
+                      {homepack}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <StickItem
+                  value="Ai Home chatbot"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
                 />
-                <Text style={{ fontSize: 16 }}>Home Pack</Text>
-              </View>
-              <TouchableOpacity
-                style={homepack == "Activate" ? styles.CtoA : styles.CtoA_Clk}
-                onPress={this.onActivate_HomePack}
-              >
-                <Text style={{ fontSize: 14, color: colors.darkblue }}>
-                  {homepack}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                width: "100%",
-                height: 50,
-                marginBottom: 5,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center"
-              }}
-            >
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  width: 150
-                }}
-              >
-                <Image
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginTop: 5,
-                    marginLeft: 10,
-                    marginRight: 10
-                  }}
-                  source={require("../../../assets/pet.png")}
+                <StickItem
+                  value="Google Home"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
                 />
-                <Text style={{ fontSize: 16 }}>Pet Pack</Text>
+                <StickItem
+                  value="Wifi"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
+                />
+                <StickItem
+                  value="Netflix"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
+                />
+                <StickItem
+                  value="Monthly cleaning"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
+                />
+                <StickItem
+                  value="Gas, water, electric"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
+                />
+                <StickItem
+                  value="Contents, damage & keys cover"
+                  checked={homepack === "Activated" ? true : false}
+                  img={require("../../../assets/home/house.png")}
+                />
               </View>
-              <TouchableOpacity
-                style={petpack == "Bolt-on" ? styles.CtoA : styles.CtoA_Clk}
-                onPress={this.onBolt_PetPack}
-              >
-                <Text style={{ fontSize: 14, color: colors.darkblue }}>
-                  Bolt-on
-                </Text>
-              </TouchableOpacity>
             </View>
-          </View>
-          <View
-            style={{
-              width: "100%",
-              height: 170,
-              paddingLeft: 10,
-              paddingRight: 10,
-              paddingTop: 10,
-              paddingBottom: 10
-            }}
-          >
-            <View style={styles.Section}>
-              <Image
-                source={require("../../../assets/user.png")}
-                style={{ width: 20, height: 20 }}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Accommodation Status"
-                onChangeText={userString => {
-                  this.setState({ userString });
-                }}
-              />
-              <Image
-                source={accomodation_statusImg}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-            </View>
-            <View style={styles.Section}>
-              <Image
-                source={require("../../../assets/placeholder.png")}
-                style={{ width: 20, height: 20 }}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Number, StreetName, City, PostCode"
-                onChangeText={addressString => {
-                  this.setState({ addressString });
-                }}
-              />
-              <Image
-                source={location_statusImg}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-            </View>
-            <View style={styles.Section}>
-              <Image
-                source={require("../../../assets/bed.png")}
-                style={{ width: 20, height: 20 }}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Bedrooms"
-                onChangeText={phoneString => {
-                  this.setState({ phoneString });
-                }}
-              />
-              <Image
-                source={bedroom_statusImg}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-            </View>
-            <View style={styles.Section}>
-              <Image
-                source={require("../../../assets/house.png")}
-                style={{ width: 20, height: 20 }}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Price"
-                onChangeText={jobString => {
-                  this.setState({ jobString });
-                }}
-              />
-              <Image
-                source={price_statusImg}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-            </View>
-          </View>
-        </View>
-      </KeyboardAwareScrollView>
+          </KeyboardAwareScrollView>
+        )}
+      </View>
     );
   }
 }
 const styles = StyleSheet.create({
-  button: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: colors.grey,
-    borderRadius: 5,
-    shadowColor: "rgba(0,0,0, .4)", // IOS
-    shadowOffset: { height: 1, width: 1 }, // IOS
-    shadowOpacity: 1, // IOS
-    shadowRadius: 1, //IOS
-    elevation: 2 // Android,
-  },
-  buttonClk: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: colors.grey,
-    borderRadius: 5,
-    shadowColor: "rgba(0,0,0, .4)", // IOS
-    shadowOffset: { height: 8, width: 8 }, // IOS
-    shadowOpacity: 0.4, // IOS
-    shadowRadius: 0.2, //IOS
-    elevation: 2 // Android,
-  },
   Title: { fontSize: 35, fontFamily: "Andallan" },
   CtoA: {
     borderRadius: 20,
@@ -365,7 +276,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 50,
-    backgroundColor: "rgba(255, 255, 0,1)"
+    backgroundColor: colors.yellow,
+    shadowOffset: { height: 1, width: 1 },
+    shadowColor: colors.darkblue,
+    shadowOpacity: 0.2
   },
   CtoA_Clk: {
     borderRadius: 20,
@@ -375,7 +289,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 50,
-    backgroundColor: "rgba(255, 255, 0, 0.3)"
+    backgroundColor: "rgba(255, 255, 0, 0.3)",
+    shadowOffset: { height: 1, width: 1 },
+    shadowColor: colors.darkblue,
+    shadowOpacity: 0.2
   },
   CallAction: {
     width: "80%",
@@ -383,7 +300,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#152439"
+    backgroundColor: "#152439",
+    shadowOffset: { height: 1, width: 1 },
+    shadowColor: colors.darkblue,
+    shadowOpacity: 0.2
   },
   iconstyle: {
     color: "#9c9ebf"
@@ -420,10 +340,10 @@ const styles = StyleSheet.create({
   },
   Section: {
     flex: 1,
+    width: "100%",
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff"
+    justifyContent: "flex-start",
+    alignItems: "center"
   },
   Icon: {
     padding: 10
@@ -434,10 +354,9 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     paddingBottom: 5,
     paddingLeft: 5,
-    borderBottomColor: "#f0eff5",
-    borderBottomWidth: 1,
+    width: "100%",
     fontSize: 18,
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
     color: "#424242"
   },
   fab: {
@@ -466,6 +385,12 @@ const styles = StyleSheet.create({
   },
   tabStyle: {
     backgroundColor: "#f0eff5"
+  },
+  maincontainer: {
+    flex: 1,
+    width: Metrics.screenWidth,
+    height: Metrics.screenHeight,
+    backgroundColor: colors.white
   }
 });
 function mapDispatchToProps(dispatch) {
@@ -475,7 +400,9 @@ function mapDispatchToProps(dispatch) {
 }
 function mapStateToProps(state) {
   return {
-    basic: state.basic
+    basic: state.basic,
+    uid: state.uid,
+    home: state.home
   };
 }
 export default connect(

@@ -1,15 +1,26 @@
 import {
   SAVE_ONBOARDING,
-  SAVE_AUTH,
-  SAVE_TOKEN,
-  SAVE_USERID
+  SAVE_UID,
+  SAVE_PET,
+  SAVE_BIKE,
+  SAVE_HEALTH,
+  SAVE_HOME,
+  SAVE_RENT,
+  SAVE_REDIRECT_TOKEN,
+  REMOVE_ALL
 } from "../actions";
 
 import { createReducer } from "reduxsauce";
 
 export const initialState = {
-  basic_profile: {},
-  keys: {}
+  basic_profile: null,
+  uid: "",
+  pet: null,
+  bike: null,
+  health: null,
+  home: null,
+  rent: null,
+  redirect_token: null
 };
 
 const saveOnboardingReducer = (state, action) => ({
@@ -17,25 +28,59 @@ const saveOnboardingReducer = (state, action) => ({
   basic: action.basic
 });
 
-const saveAuth = (state, action) => ({
+const saveUIDReducer = (state, action) => ({
   ...state,
-  keys: action.authkey
+  uid: action.uid
 });
 
-const saveToken = (state, action) => ({
+const savePetReducer = (state, action) => ({
   ...state,
-  token: action.token
+  pet: action.pet
 });
 
-const saveCurrentUserId = (state, action) => ({
+const saveBikeReducer = (state, action) => ({
   ...state,
-  user_id: action.user_id
+  bike: action.bike
+});
+
+const saveHealthReducer = (state, action) => ({
+  ...state,
+  health: action.health
+});
+
+const saveHomeReducer = (state, action) => ({
+  ...state,
+  home: action.home
+});
+
+const saveRentReducer = (state, action) => ({
+  ...state,
+  rent: action.rent
+});
+
+const saveRedirectTokenReducer = (state, action) => ({
+  ...state,
+  redirect_token: action.redirect_token
+});
+
+const removeAllReducer = (state, action) => ({
+  ...state,
+  pet: null,
+  bike: null,
+  health: null,
+  home: null,
+  rent: null
 });
 
 const actionHandlers = {
   SAVE_ONBOARDING: saveOnboardingReducer,
-  SAVE_AUTH: saveAuth,
-  SAVE_TOKEN: saveToken,
-  SAVE_USERID: saveCurrentUserId
+  SAVE_UID: saveUIDReducer,
+  SAVE_PET: savePetReducer,
+  SAVE_BIKE: saveBikeReducer,
+  SAVE_HEALTH: saveHealthReducer,
+  SAVE_HOME: saveHomeReducer,
+  SAVE_RENT: saveRentReducer,
+  SAVE_REDIRECT_TOKEN: saveRedirectTokenReducer,
+  REMOVE_ALL: removeAllReducer
 };
 export default createReducer(initialState, actionHandlers);

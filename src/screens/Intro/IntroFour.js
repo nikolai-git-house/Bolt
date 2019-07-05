@@ -64,7 +64,10 @@ export default class IntroOne extends React.Component {
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: colors.yellow,
-                borderRadius: 20
+                borderRadius: 20,
+                shadowColor: "black",
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.2
               }}
               onPress={() => this.props.navigation.navigate("Onboard")}
             >
@@ -115,7 +118,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    paddingTop: 50,
+    paddingTop: 90,
     backgroundColor: colors.lightgrey
   },
   subcontainer: {

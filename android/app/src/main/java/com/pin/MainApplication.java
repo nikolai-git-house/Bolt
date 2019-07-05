@@ -3,6 +3,8 @@ package com.pin;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import fr.bamlab.rnimageresizer.ImageResizerPackage;
+import com.RNFetchBlob.RNFetchBlobPackage;
 import org.andrewbestbier.salesforcechat.RNSalesforceChatPackage;
 import fr.snapp.imagebase64.RNImgToBase64Package;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
@@ -29,6 +31,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new ImageResizerPackage(),
+            new RNFetchBlobPackage(),
             new RNSalesforceChatPackage(),
             new RNImgToBase64Package(),
             new RNDeviceInfo(),
