@@ -394,6 +394,7 @@ class Firebase {
             .equalTo(item + "__" + adjective)
             .once("value", snapshot => {
               let result = [];
+
               if (snapshot.val()) {
                 result = Object.values(snapshot.val());
                 const ticket = result[0].ticket;
@@ -408,7 +409,7 @@ class Firebase {
                     result = Object.values(snapshot.val());
                     callback(result[0]);
                   });
-              }
+              } else callback(false);
             });
         } else {
           const ticket = res[0].ticket;
@@ -528,7 +529,8 @@ class Firebase {
     let data = {
       uid: uid,
       username: username,
-      established: "waiting"
+      established: "waiting",
+      title: ticket.title
     };
     let path = "livechat/" + uid;
     firebase

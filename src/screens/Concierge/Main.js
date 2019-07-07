@@ -131,36 +131,63 @@ class Main extends React.Component {
   AnalyzeText = answer => {
     const _this = this;
     const { duration } = this.state;
-    let ticket = { id: answer.ticket, issue: answer.issue, status: "Waiting" };
-    const result = [
-      { type: "bot", text: "Thanks for reporting this issue." },
-      { type: "bot", text: "This is a " + answer.band + "." },
-      { type: "bot", text: "This is covered by Bolt." },
-      {
+    let ticket = {
+      id: answer.ticket,
+      issue: answer.issue,
+      status: "Waiting",
+      title: "Home Repairs"
+    };
+    console.log("answer.ticket", answer.ticket);
+    if (answer.ticket === 14.1) {
+      this.addMessage({
         type: "bot",
-        text: "A Bolt worker will be in touch " + answer.response_sla + "."
-      },
-      {
-        type: "bot",
-        text: "We aim to have this repair made " + answer.repair_sla + "."
-      },
-      {
-        type: "bot",
-        text:
-          "We have logged a ticket, which our team will be monitoring. If you have any other questions please do let me know."
-      }
-    ];
-    result.some((item, index) => {
+        text: "Thanks for reporting this issue."
+      });
       setTimeout(() => {
-        _this.addMessage(item);
-      }, index * duration);
-      if (index === 5) {
+        _this.addMessage({
+          type: "bot",
+          text: "This issue is not covered by Bolt."
+        });
+      }, duration);
+      setTimeout(() => {
+        _this.addMessage({
+          type: "bot",
+          isUserNext: true,
+          isChoice: true,
+          choiceselected: false
+        });
+      }, 2 * duration);
+    } else {
+      const result = [
+        { type: "bot", text: "Thanks for reporting this issue." },
+        { type: "bot", text: "This is a " + answer.band + "." },
+        { type: "bot", text: "This is covered by Bolt." },
+        {
+          type: "bot",
+          text: "A Bolt worker will be in touch " + answer.response_sla + "."
+        },
+        {
+          type: "bot",
+          text: "We aim to have this repair made " + answer.repair_sla + "."
+        },
+        {
+          type: "bot",
+          text:
+            "We have logged a ticket, which our team will be monitoring. If you have any other questions please do let me know."
+        }
+      ];
+      result.some((item, index) => {
         setTimeout(() => {
-          _this.requestChat(ticket);
-          _this.refs.scrollView.scrollToEnd();
+          _this.addMessage(item);
         }, index * duration);
-      }
-    });
+        if (index === 5) {
+          setTimeout(() => {
+            _this.requestChat(ticket);
+            _this.refs.scrollView.scrollToEnd();
+          }, index * duration);
+        }
+      });
+    }
   };
   isFailedIssue = () => {
     this.addMessage({
@@ -213,7 +240,12 @@ class Main extends React.Component {
   createTicket = choice => {
     let ticket_id = choice.id;
     let issue = choice.title;
-    let ticket = { id: ticket_id, issue: issue, status: "Waiting" };
+    let ticket = {
+      id: ticket_id,
+      issue: issue,
+      status: "Waiting",
+      title: issue
+    };
     this.requestChat(ticket);
   };
   requestChat = ticket => {
@@ -274,12 +306,14 @@ class Main extends React.Component {
   }
   addMessage = message => {
     const { messages } = this.state;
+    const _this = this;
     let temp = messages;
     temp.push(message);
     this.setState({ messages: temp }, () => {
       console.log("added Message");
       setTimeout(() => {
-        this.refs.scrollView.scrollToEnd();
+        if (message.isChoice) this.moveScroll();
+        else _this.refs.scrollView.scrollToEnd();
       }, 100);
     });
   };
@@ -349,7 +383,13 @@ class Main extends React.Component {
       _this.refs.scrollView.scrollToEnd();
     }, 100);
   };
-
+  handleScroll = e => {
+    this.setState({ scrollY: e.nativeEvent.contentOffset.y });
+  };
+  moveScroll = () => {
+    console.log("scrollY", this.state.scrollY);
+    this.refs.scrollView.scrollTo({ y: this.state.scrollY + 20 });
+  };
   render() {
     const {
       keyboard_Height,
@@ -382,6 +422,8 @@ class Main extends React.Component {
             minHeight: Metrics.screenHeight - 120
           }}
           keyboardShouldPersistTaps={"handled"}
+          onScroll={this.handleScroll}
+          scrollEventThrottle={16}
         >
           <View style={{ height: 20 }} />
           {this.setMessages()}

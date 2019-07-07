@@ -13,7 +13,7 @@ import Wallet from "./src/screens/Wallet";
 import PersonalProfile from "./src/screens/Profile/Personal";
 import HomeProfile from "./src/screens/Profile/Home";
 import GroupProfile from "./src/screens/Profile/Group";
-
+import colors from "./src/theme/Colors";
 const profile_img = require("./src/assets/profile.png");
 const explore_img = require("./src/assets/explore.png");
 const concierge_img = require("./src/assets/concierge.png");
@@ -83,8 +83,16 @@ let tabNavigatorConfig = {
   swipeEnabled: true,
   tabBarOptions: {
     showLabel: true,
-    activeTintColor: "grey",
-    style: { backgroundColor: "#f0eff5", height: 60 }
+    activeTintColor: "black",
+
+    style: {
+      backgroundColor: "white",
+      height: 60,
+      borderTopColor: "transparent",
+      shadowOffset: { height: 1, width: 1 },
+      shadowColor: colors.darkblue,
+      shadowOpacity: 0.2
+    }
   },
   lazy: true
 };
