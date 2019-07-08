@@ -137,11 +137,10 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-gesture-handler')
     compile project(':react-native-image-resizer')
     compile project(':react-native-fetch-blob')
-    compile project(':react-native-salesforce-chat')
     compile project(':react-native-image-base64')
-    compile project(':react-native-device-info')
     compile project(':react-native-message-bubble')
     compile project(':react-native-vector-icons')
     compile project(':react-native-image-picker')

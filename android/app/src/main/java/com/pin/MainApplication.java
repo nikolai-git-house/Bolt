@@ -3,11 +3,10 @@ package com.pin;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import fr.bamlab.rnimageresizer.ImageResizerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
-import org.andrewbestbier.salesforcechat.RNSalesforceChatPackage;
 import fr.snapp.imagebase64.RNImgToBase64Package;
-import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.bubblemessage.BubbleMessagePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.imagepicker.ImagePickerPackage;
@@ -31,11 +30,10 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNGestureHandlerPackage(),
             new ImageResizerPackage(),
             new RNFetchBlobPackage(),
-            new RNSalesforceChatPackage(),
             new RNImgToBase64Package(),
-            new RNDeviceInfo(),
             new BubbleMessagePackage(),
             new VectorIconsPackage(),
             new ImagePickerPackage()
