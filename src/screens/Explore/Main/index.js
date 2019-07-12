@@ -82,11 +82,12 @@ class Main extends React.Component {
         }
       ).start();
   };
-  SendMail = (from, pkgname, message, sender_name) => {
+  SendMail = (to, from, pkgname, message, sender_name) => {
     axios
       .post(
         "https://us-central1-boltconcierge-2f0f9.cloudfunctions.net/sendEmail",
         {
+          to: to,
           message: message,
           sender_name: sender_name,
           from: from,
@@ -96,8 +97,10 @@ class Main extends React.Component {
       .then(result => {
         if (result.status === 200) {
           alert("Mail Submited.");
-        } else if (result.status === 500) {
         }
+      })
+      .catch(err => {
+        console.log("error", err);
       });
     console.log("message", message);
   };
@@ -135,8 +138,17 @@ class Main extends React.Component {
           this.setState({ loadingdata: false });
           let packageName = pkgName;
           let sender_email = basic.email;
+          const username = basic.firstname + " " + basic.lastname;
+          console.log("basic", basic);
+          let groupId = basic.groupId ? basic.groupId : "No";
           let receiver_email = "preregister@boltlabs.co.uk";
-          this.SendMail(sender_email, packageName, "Hey", "TTT");
+          this.SendMail(
+            receiver_email,
+            sender_email,
+            packageName,
+            `package/product: ${packageName}. Property/GroupID:${groupId} `,
+            username
+          );
         }
       } else {
         this.setState({
@@ -240,7 +252,8 @@ class Main extends React.Component {
               backgroundColor: coming_flag ? "#FFE366" : colors.green,
               shadowOffset: { height: 1, width: 1 },
               shadowColor: colors.darkblue,
-              shadowOpacity: 0.1
+              shadowOpacity: 0.1,
+              elevation: 3
             }}
             onPress={this.BoltOn}
           >

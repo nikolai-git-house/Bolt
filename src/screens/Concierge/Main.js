@@ -128,14 +128,19 @@ class Main extends React.Component {
         console.log("Error", err);
       });
   };
-  AnalyzeText = answer => {
+  AnalyzeText = (answer, room) => {
     const _this = this;
     const { duration } = this.state;
+    const { uid } = this.props;
     let ticket = {
       id: answer.ticket,
       issue: answer.issue,
       status: "Waiting",
-      title: "Home Repairs"
+      title: "Home Repairs",
+      response_sla: answer.response_sla,
+      repair_sla: answer.repair_sla,
+      room: room,
+      memberID: uid
     };
     console.log("answer.ticket", answer.ticket);
     if (answer.ticket === 14.1) {
@@ -268,7 +273,7 @@ class Main extends React.Component {
     this.setState({ keyboard_Height });
     let self = this;
     setTimeout(() => {
-      self.refs.scrollView.scrollToEnd();
+      self.moveScroll();
     }, 100);
   }
   selectedChoice = choice => {
@@ -351,7 +356,7 @@ class Main extends React.Component {
         self.isFailedIssue();
       } else {
         console.log("findanswer result", res);
-        self.AnalyzeText(res);
+        self.AnalyzeText(res, room);
         self.setState({ isfinalQuestion: false });
       }
     });
@@ -371,9 +376,9 @@ class Main extends React.Component {
     setTimeout(() => {
       this.setState({ keyboard: "visible" });
     }, 200);
-    setTimeout(() => {
-      _this.refs.scrollView.scrollToEnd();
-    }, 300);
+    // setTimeout(() => {
+    //   _this.moveScroll();
+    // }, 300);
   };
   onCloseIssue = () => {
     let _this = this;
@@ -389,6 +394,10 @@ class Main extends React.Component {
   moveScroll = () => {
     console.log("scrollY", this.state.scrollY);
     this.refs.scrollView.scrollTo({ y: this.state.scrollY + 20 });
+  };
+  moveIssueScroll = () => {
+    console.log("scrollY", this.state.scrollY);
+    this.refs.scrollView.scrollTo({ y: this.state.scrollY + 10 });
   };
   render() {
     const {
@@ -504,6 +513,8 @@ const styles = StyleSheet.create({
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
+    elevation: 3,
+    elevation: 3,
     alignSelf: "flex-end"
   },
   button: {
@@ -525,6 +536,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
+    elevation: 3,
     marginTop: -5
   },
   container: {

@@ -63,7 +63,8 @@ class MessageInput extends React.Component {
             paddingRight: 10,
             shadowColor: "black",
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.2
+            shadowOpacity: 0.2,
+            elevation: 3
           }}
           value={message_txt}
           placeholder={placeholder}
@@ -89,7 +90,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   Go: {
     color: colors.darkblue,

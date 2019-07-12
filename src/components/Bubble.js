@@ -52,6 +52,7 @@ export default class Bubble extends React.Component {
             shadowOffset: { height: 1, width: 1 },
             shadowColor: colors.darkblue,
             shadowOpacity: 0.2,
+            elevation: 3,
             marginRight: 5
           }}
         >

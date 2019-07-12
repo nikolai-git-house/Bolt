@@ -470,7 +470,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   imageContainer: {
     width: 80,

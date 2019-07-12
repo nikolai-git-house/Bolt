@@ -392,7 +392,8 @@ class Pack extends React.Component {
                   borderWidth: 1,
                   shadowColor: "black",
                   shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.2
+                  shadowOpacity: 0.2,
+                  elevation: 3
                 }}
               >
                 <Text style={Styles.text}>OK</Text>
@@ -452,7 +453,8 @@ class Pack extends React.Component {
                   borderWidth: 1,
                   shadowColor: "black",
                   shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.2
+                  shadowOpacity: 0.2,
+                  elevation: 3
                 }}
               >
                 <Text style={Styles.text}>Confirm purchase</Text>
@@ -505,7 +507,8 @@ class Pack extends React.Component {
                   borderWidth: 1,
                   shadowColor: "black",
                   shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.2
+                  shadowOpacity: 0.2,
+                  elevation: 3
                 }}
               >
                 <Text style={Styles.text}>Get started</Text>
@@ -580,7 +583,8 @@ const Styles = StyleSheet.create({
     borderColor: colors.cardborder,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   }
 });
 

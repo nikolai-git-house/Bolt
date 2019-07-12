@@ -67,7 +67,8 @@ export default class IntroOne extends React.Component {
                 borderRadius: 20,
                 shadowColor: "black",
                 shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.2
+                shadowOpacity: 0.2,
+                elevation: 3
               }}
               onPress={() => this.props.navigation.navigate("Onboard")}
             >
@@ -96,6 +97,7 @@ const styles = StyleSheet.create({
     shadowOffset: { height: 5, width: 5 },
     shadowColor: colors.darkblue,
     shadowOpacity: 0.4,
+    elevation: 3,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20

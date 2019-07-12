@@ -279,7 +279,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.yellow,
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   CtoA_Clk: {
     borderRadius: 20,
@@ -292,7 +293,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 0, 0.3)",
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   CallAction: {
     width: "80%",
@@ -303,7 +305,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#152439",
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   iconstyle: {
     color: "#9c9ebf"

@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
+    elevation: 3,
     alignSelf: "flex-end"
   },
   button: {

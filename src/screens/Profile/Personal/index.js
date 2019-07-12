@@ -703,13 +703,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   avatar: {
     marginTop: 20,
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   img: {
     width: 55,
@@ -768,7 +770,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   Section: {
     flexDirection: "row",

@@ -38,7 +38,8 @@ export default class IconMenu extends React.Component {
             backgroundColor: colors.white,
             shadowOffset: { height: 2, width: 2 },
             shadowColor: colors.darkblue,
-            shadowOpacity: 0.2
+            shadowOpacity: 0.2,
+            elevation: 3
           }}
         >
           <Image

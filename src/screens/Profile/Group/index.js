@@ -278,7 +278,8 @@ class GroupProfile extends React.Component {
                       justifyContent: "center",
                       shadowColor: "black",
                       shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 0.2
+                      shadowOpacity: 0.2,
+                      elevation: 3
                     }}
                   >
                     <Text style={styles.text}>OK</Text>
@@ -336,7 +337,8 @@ class GroupProfile extends React.Component {
                         justifyContent: "center",
                         shadowColor: "black",
                         shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0.2
+                        shadowOpacity: 0.2,
+                        elevation: 3
                       }}
                     >
                       <Text style={styles.text}>OK</Text>
@@ -354,7 +356,8 @@ class GroupProfile extends React.Component {
                         justifyContent: "center",
                         shadowColor: "black",
                         shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0.2
+                        shadowOpacity: 0.2,
+                        elevation: 3
                       }}
                     >
                       <Text style={styles.text}>Cancel</Text>

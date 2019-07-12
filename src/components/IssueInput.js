@@ -212,7 +212,8 @@ const styles = StyleSheet.create({
     borderColor: colors.white,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   CalltoAction: {
     opacity: 0.8,
@@ -221,7 +222,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   Go: {
     color: colors.darkblue,

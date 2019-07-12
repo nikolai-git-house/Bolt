@@ -47,7 +47,8 @@ export const SecondaryPackage = props => {
             padding: 2,
             shadowColor: "black",
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.2
+            shadowOpacity: 0.2,
+            elevation: 3
           }}
         >
           <Image source={down_arrow_img} style={{ width: 15, height: 15 }} />

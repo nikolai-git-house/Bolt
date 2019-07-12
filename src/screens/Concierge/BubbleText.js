@@ -110,7 +110,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   bubble_text: {
     fontFamily: "Graphik",
@@ -128,7 +129,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.yellow,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   userbubble_text: {
     fontFamily: "Graphik",
@@ -145,6 +147,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   }
 });

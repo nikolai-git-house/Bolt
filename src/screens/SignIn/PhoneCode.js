@@ -212,7 +212,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
-    shadowOpacity: 0.2
+    shadowOpacity: 0.2,
+    elevation: 3
   }
 });
 function mapDispatchToProps(dispatch) {

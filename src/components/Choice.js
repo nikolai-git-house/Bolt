@@ -76,17 +76,17 @@ class Choice extends React.Component {
                   style={{
                     width: 90,
                     height: 90,
-                    //borderRadius: 10,
                     margin: 15,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     textAlign: "center",
-                    //backgroundColor: colors.white,
+                    backgroundColor: colors.white,
                     shadowColor: "black",
                     shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.2
+                    shadowOpacity: 0.2,
+                    elevation: 3
                   }}
                 >
                   <Image style={styles.imageThumbnail} source={item.src} />

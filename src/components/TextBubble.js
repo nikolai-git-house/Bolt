@@ -49,7 +49,8 @@ export default class TextBubble extends React.Component {
             borderRadius: 14,
             shadowOffset: { height: 1, width: 1 },
             shadowColor: colors.darkblue,
-            shadowOpacity: 0.2
+            shadowOpacity: 0.2,
+            elevation: 3
           }}
         >
           <Text style={{ fontFamily: "Graphik", fontSize: 17, color: "#555" }}>
@@ -83,6 +84,7 @@ const Styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
+    elevation: 3,
     marginTop: -5
   }
 });

@@ -55,7 +55,8 @@ export default class InputBox extends React.Component {
             textAlign: "center",
             shadowOffset: { height: 1, width: 1 },
             shadowColor: colors.darkblue,
-            shadowOpacity: 0.2
+            shadowOpacity: 0.2,
+            elevation: 3
           }}
         >
           <View
