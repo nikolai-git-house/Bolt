@@ -12,7 +12,8 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
-  WebView
+  WebView,
+  Platform
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -185,7 +186,11 @@ class HealthProfile extends React.Component {
           <WebView
             ref={r => (this.webview = r)}
             originWhitelist={["*"]}
-            source={{ uri: "./external/onboarding/index.html" }}
+            source={
+              Platform.OS === "ios"
+                ? { uri: "./external/onboarding/index.html" }
+                : require("../../../webview/onboarding/index.html")
+            }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
             javaScriptEnabled

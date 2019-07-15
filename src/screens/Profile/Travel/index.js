@@ -204,7 +204,11 @@ class TravelProfile extends React.Component {
           <WebView
             ref={r => (this.webview = r)}
             originWhitelist={["*"]}
-            source={{ uri: "./external/onboarding/index.html" }}
+            source={
+              Platform.OS === "ios"
+                ? { uri: "./external/onboarding/index.html" }
+                : require("../../../webview/onboarding/index.html")
+            }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
             javaScriptEnabled

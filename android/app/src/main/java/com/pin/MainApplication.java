@@ -3,13 +3,6 @@ package com.pin;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import fr.bamlab.rnimageresizer.ImageResizerPackage;
-import com.RNFetchBlob.RNFetchBlobPackage;
-import fr.snapp.imagebase64.RNImgToBase64Package;
-import com.bubblemessage.BubbleMessagePackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.imagepicker.ImagePickerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -29,14 +22,7 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
-          new MainReactPackage(),
-            new RNGestureHandlerPackage(),
-            new ImageResizerPackage(),
-            new RNFetchBlobPackage(),
-            new RNImgToBase64Package(),
-            new BubbleMessagePackage(),
-            new VectorIconsPackage(),
-            new ImagePickerPackage()
+          new MainReactPackage()
       );
     }
 

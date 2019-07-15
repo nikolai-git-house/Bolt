@@ -1,0 +1,32 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'pin' do
+  # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
+  # use_frameworks!
+
+  # Pods for pin
+ 
+  pod 'Firebase/Core'
+  pod 'Firebase/Messaging'
+  
+
+  target 'pinTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+end
+
+target 'pin-tvOS' do
+  # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
+  # use_frameworks!
+
+  # Pods for pin-tvOS
+
+  target 'pin-tvOSTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+end

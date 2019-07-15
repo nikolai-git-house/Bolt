@@ -163,6 +163,7 @@ class PhoneCode extends React.Component {
             marginTop: 180,
             width: 300,
             height: 50,
+            paddingBottom: 0,
             borderBottomColor: colors.darkblue,
             borderBottomWidth: 1,
             fontSize: 30,

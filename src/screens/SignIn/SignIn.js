@@ -71,7 +71,11 @@ class SignIn extends React.Component {
           }}
           ref="phone"
           initialCountry="gb"
-          textStyle={{ fontSize: 25, fontFamily: "Quicksand" }}
+          textStyle={{
+            fontSize: 25,
+            fontFamily: "Quicksand",
+            height: 30
+          }}
           onChangePhoneNumber={this.EditPhoneNumber}
           value={phone}
         />

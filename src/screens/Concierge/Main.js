@@ -278,6 +278,7 @@ class Main extends React.Component {
   }
   selectedChoice = choice => {
     let self = this;
+    const { duration } = this.state;
     Keyboard.dismiss();
     this.setState({ keyboard: "invisible", choiceselected: true });
     this.addMessage({

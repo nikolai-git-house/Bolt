@@ -493,7 +493,7 @@ class PersonalProfile extends React.Component {
           <View
             style={{
               width: "90%",
-              height: 180,
+              flex: 1,
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
@@ -540,6 +540,7 @@ class PersonalProfile extends React.Component {
             </View>
             <View
               style={{
+                width: "100%",
                 flex: 1,
                 alignItems: "flex-start",
                 paddingLeft: 20
@@ -561,13 +562,7 @@ class PersonalProfile extends React.Component {
                   source={require("../../../assets/gift.png")}
                   style={{ width: 18, height: 18, marginRight: 10 }}
                 />
-                <TextInput
-                  style={styles.input}
-                  placeholder="DD/MM/YYYY"
-                  editable={editable}
-                  onChangeText={txt => this.EditDOB(txt)}
-                  value={dob}
-                />
+                <Text style={styles.input}>{dob}</Text>
                 <Image
                   source={dob_statusImg}
                   style={{ width: 18, height: 18, marginLeft: "auto" }}
@@ -589,14 +584,7 @@ class PersonalProfile extends React.Component {
                   source={require("../../../assets/message.png")}
                   style={{ width: 18, height: 18, marginRight: 10 }}
                 />
-                <TextInput
-                  style={styles.input}
-                  ref="email_Input"
-                  placeholder="Your email address"
-                  editable={editable}
-                  onChangeText={txt => this.EditEmail(txt)}
-                  value={email}
-                />
+                <Text style={styles.input}>{email}</Text>
                 <Image
                   source={email_statusImg}
                   style={{ width: 18, height: 18, marginLeft: "auto" }}
@@ -607,13 +595,7 @@ class PersonalProfile extends React.Component {
                   source={require("../../../assets/key.png")}
                   style={{ width: 18, height: 18, marginRight: 10 }}
                 />
-                <TextInput
-                  style={styles.input}
-                  editable={editable}
-                  placeholder="Your password"
-                  onChangeText={txt => this.EditPassword(txt)}
-                  value={password}
-                />
+                <Text style={styles.input}>{password}</Text>
                 <Image
                   source={password_statusImg}
                   style={{ width: 18, height: 18, marginLeft: "auto" }}
@@ -779,7 +761,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
     marginBottom: 5,
-    width: 200
+    width: "100%"
   },
   Name: {
     fontSize: 20,
