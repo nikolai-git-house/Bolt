@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import colors from "../theme/Colors";
 
-export default class Bubble extends React.Component {
+export default class TopImage extends React.Component {
   render() {
     return (
       <Image
@@ -23,8 +23,7 @@ export default class Bubble extends React.Component {
 const Styles = StyleSheet.create({
   imgContainer: {
     width: "100%",
-    position: "absolute",
-    height: 160,
+    height: 100,
     position: "absolute",
     top: 0,
     left: 0

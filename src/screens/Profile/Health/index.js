@@ -189,7 +189,7 @@ class HealthProfile extends React.Component {
             source={
               Platform.OS === "ios"
                 ? { uri: "./external/onboarding/index.html" }
-                : require("../../../webview/onboarding/index.html")
+                : { uri: "file:///android_asset/onboarding/index.html" }
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -198,6 +198,7 @@ class HealthProfile extends React.Component {
             mixedContentMode="always"
             thirdPartyCookiesEnabled
             allowUniversalAccessFromFileURLs
+            useWebKit={true}
           />
         )}
         {!webview && (
@@ -213,7 +214,7 @@ class HealthProfile extends React.Component {
               <Text
                 style={{
                   textAlign: "center",
-                  fontFamily: "Quicksand",
+                  fontFamily: "Gothic A1",
                   fontSize: 20,
                   fontWeight: "700",
                   marginBottom: 10
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
   },
   Title: {
     fontSize: 20,
-    fontFamily: "Quicksand",
+    fontFamily: "Gothic A1",
     color: colors.darkblue,
     fontWeight: "700",
     textAlign: "center",
@@ -430,7 +431,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
+    fontFamily: "Gothic A1"
   }
 });
 function mapDispatchToProps(dispatch) {

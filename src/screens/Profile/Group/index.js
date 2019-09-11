@@ -18,6 +18,7 @@ import {
 import colors from "../../../theme/Colors";
 import { connect } from "react-redux";
 import { saveOnboarding } from "../../../Redux/actions/index";
+import Sound from "react-native-sound";
 import Firebase from "../../../firebasehelper";
 import MemberItem from "../../../components/MemberItem";
 import { sendInvitation } from "../../../functions/Auth";
@@ -27,6 +28,13 @@ const error_img = require("../../../assets/popup/error.png");
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 const invite_img = require("../../../assets/popup/home.png");
 
+var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+  if (error) {
+    console.log("failed to load the sound", error);
+    return;
+  }
+});
+bamboo.setVolume(0.5);
 class GroupProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -56,7 +64,7 @@ class GroupProfile extends React.Component {
               const username = res.firstname + " " + res.lastname;
               return {
                 username: username,
-                img: require("../../../assets/Groups/semon.jpg")
+                img: res.avatar_url
               };
             });
           });
@@ -124,7 +132,7 @@ class GroupProfile extends React.Component {
             let temp = data;
             temp.splice(temp.length - 1, 0, {
               username: username,
-              img: require("../../../assets/Groups/semon.jpg")
+              img: require("../../../assets/Groups/avatar.png")
             });
             this.setState({ data: temp });
             this.toggleInvite(false);
@@ -160,16 +168,18 @@ class GroupProfile extends React.Component {
   onEventHandler = data => {
     const { uid, basic } = this.props;
     const { first_member_name, first_member_phone } = this.state;
-
-    const obj = JSON.parse(data);
-    const key = Object.keys(obj)[0];
-    // console.log("key", key);
-    // console.log("value", obj[key]);
-    console.log(obj);
-    if (obj.onboardingFinished) {
-      this.addMember(first_member_phone);
-      setTimeout(() => this.setState({ webview: false }), 2000);
-    } else this.setState(obj);
+    bamboo.play();
+    if (data != "bamboo") {
+      const obj = JSON.parse(data);
+      const key = Object.keys(obj)[0];
+      // console.log("key", key);
+      // console.log("value", obj[key]);
+      console.log(obj);
+      if (obj.onboardingFinished) {
+        this.addMember(first_member_phone);
+        setTimeout(() => this.setState({ webview: false }), 2000);
+      } else this.setState(obj);
+    }
   };
   render() {
     const data = this.state.data;
@@ -207,7 +217,7 @@ class GroupProfile extends React.Component {
             source={
               Platform.OS === "ios"
                 ? { uri: "./external/onboarding/index.html" }
-                : require("../../../webview/onboarding/index.html")
+                : { uri: "file:///android_asset/onboarding/index.html" }
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -216,6 +226,7 @@ class GroupProfile extends React.Component {
             mixedContentMode="always"
             thirdPartyCookiesEnabled
             allowUniversalAccessFromFileURLs
+            useWebKit={true}
           />
         )}
         {!webview && (
@@ -232,7 +243,7 @@ class GroupProfile extends React.Component {
             <Text
               style={{
                 textAlign: "center",
-                fontFamily: "Quicksand",
+                fontFamily: "Gothic A1",
                 fontSize: 20,
                 fontWeight: "700",
                 marginBottom: 50
@@ -406,7 +417,7 @@ const styles = StyleSheet.create({
   },
   Title: {
     fontSize: 20,
-    fontFamily: "Quicksand",
+    fontFamily: "Gothic A1",
     color: colors.darkblue,
     fontWeight: "700",
     textAlign: "center",
@@ -471,7 +482,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
+    fontFamily: "Gothic A1"
   }
 });
 function mapDispatchToProps(dispatch) {

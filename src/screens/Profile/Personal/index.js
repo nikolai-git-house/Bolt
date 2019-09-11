@@ -5,20 +5,15 @@ import {
   View,
   TouchableOpacity,
   TouchableHighlight,
-  StatusBar,
   Image,
   ImageBackground,
-  ToolbarAndroid,
   Platform,
-  Button,
-  Alert,
   TouchableWithoutFeedback,
-  Keyboard,
-  Dimensions,
   TextInput,
   ActivityIndicator,
   AsyncStorage,
-  Modal
+  Modal,
+  WebView
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -42,7 +37,7 @@ const home_img = require("../../../assets/popup/home.png");
 const balloon_img = require("../../../assets/popup/balloon.png");
 const error_img = require("../../../assets/popup/error.png");
 const profile_img = require("../../../assets/personal/profile.png");
-const member_img = require("../../../assets/personal/member.png");
+const member_img = require("../../../assets/personal/verified.png");
 class PersonalProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -66,6 +61,7 @@ class PersonalProfile extends React.Component {
       successVisible: false,
       errorVisible: false,
       error_msg: "",
+      profiletest_webview: false,
       basic: {
         firstname: "",
         lastname: "",
@@ -90,30 +86,6 @@ class PersonalProfile extends React.Component {
     this.toggleSuccess(false);
     this.navigateTo("Explore");
   };
-  load = () => {
-    let _this = this;
-    isSession().then(res => {
-      if (res) {
-        const { email, password, ImageSource } = _this.props.basic;
-        console.log(email, password, ImageSource);
-        _this.setState({
-          email: email,
-          key: password,
-          ImageSource: require("../../../assets/avatar.png"),
-          editable: false,
-          updating: false,
-          statusImage: ok_img,
-          isloggedIn: true,
-          email_statusImg: ok_img,
-          password_statusImg: ok_img
-        });
-        console.log("isSession", _this.state);
-      } else
-        setTimeout(() => {
-          this.toggleProfile(true);
-        }, 1500);
-    });
-  };
   componentWillReceiveProps(props) {
     let basic = props.basic;
     const { email, password } = basic;
@@ -126,6 +98,7 @@ class PersonalProfile extends React.Component {
   componentDidMount() {
     let _this = this;
     let basic = this.props.basic;
+    console.log("basic", basic);
     if (!basic) {
       basic = {
         firstname: "test",
@@ -175,8 +148,6 @@ class PersonalProfile extends React.Component {
     };
 
     ImagePicker.showImagePicker(options, response => {
-      console.log("Response = ", response);
-
       if (response.didCancel) {
         console.log("User cancelled photo picker");
       } else if (response.error) {
@@ -192,15 +163,16 @@ class PersonalProfile extends React.Component {
           filePath: response.path,
           fileName: response.fileName
         };
-      }
-      //let source = { uri: "data:image/jpeg;base64," + response.data };
-      console.log("imgSource", source);
-      let source = { uri: response.uri };
 
-      thisElement.setState({
-        ImageSource: source
-      });
-      this.uploadImage(response.uri, uid);
+        //let source = { uri: "data:image/jpeg;base64," + response.data };
+
+        let source = { uri: response.uri };
+
+        thisElement.setState({
+          ImageSource: source
+        });
+        this.uploadImage(response.uri, uid);
+      }
     });
   }
   uploadImage(uri, uid) {
@@ -210,21 +182,20 @@ class PersonalProfile extends React.Component {
     window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
     window.Blob = Blob;
 
-    return ImageResizer.createResizedImage(uri, 300, 300, "JPEG", 80).then(
-      resizedImageUri => {
-        console.log("resizedImageUri", resizedImageUri);
+    return ImageResizer.createResizedImage(uri, 300, 300, "JPEG", 80)
+      .then(resizedImageUri => {
         const uploadUri =
           Platform.OS === "ios"
             ? resizedImageUri.uri.replace("file://", "")
             : resizedImageUri.uri;
-        console.log("UploadUri", uploadUri);
+
         let mime = "image/jpg";
         let uploadBlob = null;
         const path = "avatars/";
         const imageRef = Firebase.storage()
           .ref(path)
           .child(`${uid}.jpg`);
-        console.log("imageRef=", imageRef);
+
         return fs
           .readFile(uploadUri, "base64")
           .then(data => {
@@ -239,13 +210,24 @@ class PersonalProfile extends React.Component {
             return imageRef.getDownloadURL();
           })
           .then(url => {
+            console.log("url", url);
             window.XMLHttpRequest = tempWindowXMLHttpRequest;
-            Firebase.pushProfileImage(uid, url).then(res => {
-              console.log("pushProfileImage", res);
-            });
+            Firebase.pushProfileImage(uid, url)
+              .then(res => {
+                this.props.dispatch(saveOnboarding(res));
+                AsyncStorage.setItem("profile", JSON.stringify(res));
+              })
+              .catch(err => {
+                console.log("error", err);
+              });
+          })
+          .catch(err => {
+            console.log("error", err);
           });
-      }
-    );
+      })
+      .catch(err => {
+        console.log("error", err);
+      });
   }
   Activate = () => {
     const { uid } = this.props;
@@ -254,7 +236,7 @@ class PersonalProfile extends React.Component {
       .then(res => {
         this.props.dispatch(saveOnboarding(res));
         AsyncStorage.setItem("profile", JSON.stringify(res));
-        console.log("activate result", res);
+
         this.toggleSuccess(true);
       })
       .catch(err => {
@@ -270,8 +252,9 @@ class PersonalProfile extends React.Component {
     this.setState({ fullname: txt });
   };
   EditEmail = txt => {
-    if (isEmailValidate(txt)) this.setState({ email_statusImg: ok_img });
-    else this.setState({ email_statusImg: cross_img });
+    if (isEmailValidate(txt)) {
+      this.setState({ email_statusImg: ok_img });
+    } else this.setState({ email_statusImg: cross_img });
     this.setState({ email: txt });
   };
   EditDOB = dob => {
@@ -289,7 +272,7 @@ class PersonalProfile extends React.Component {
     this.setState({ updating: "true" });
   };
   startProfileTest = () => {
-    this.navigateTo("ProfileTest");
+    this.setState({ profiletest_webview: true });
   };
   LogOut = () => {
     this.props.dispatch(removeAll());
@@ -304,9 +287,16 @@ class PersonalProfile extends React.Component {
       this.props.navigation.navigate("Landing");
     }, 1000);
   };
+  onLoadFinished = () => {
+    const { basic } = this.props;
+    if (this.profiletest_webview) {
+      console.log("posted message");
+      this.profiletest_webview.postMessage(JSON.stringify(basic));
+    }
+  };
+  onEventHandler = data => {};
   render() {
     const {
-      fullname,
       firstname,
       lastname,
       dob,
@@ -314,200 +304,67 @@ class PersonalProfile extends React.Component {
       email,
       password,
       activated,
-      job,
-      statusImage,
-      updating,
       account_creating,
-      editable,
-      isloggedIn,
       dob_statusImg,
-      name_statusImg,
       email_statusImg,
       password_statusImg,
-      error_msg
+      error_msg,
+      profiletest_webview
     } = this.state;
     let basic = this.props.basic;
     let avatar_url = basic.avatar_url;
-    var image = (
-      <ImageBackground
-        style={styles.imageContainer}
-        source={{ uri: avatar_url }}
-      />
-    );
     return (
-      <KeyboardAwareScrollView style={{ width: "100%", height: "100%" }}>
-        <View
-          style={{
-            width: "100%",
-            height: "100%",
-            alignItems: "center",
-            backgroundColor: colors.white
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              fontFamily: "Quicksand",
-              fontSize: 20,
-              fontWeight: "700",
-              marginBottom: 10
-            }}
+      <View
+        style={{
+          width: Metrics.screenWidth,
+          height: Metrics.screenHeight,
+          flex: 1,
+          backgroundColor: "transparent",
+          fontFamily: "Gothic A1",
+          marginTop: -80
+        }}
+      >
+        {profiletest_webview && (
+          <WebView
+            ref={r => (this.profiletest_webview = r)}
+            originWhitelist={["*"]}
+            source={
+              Platform.OS === "ios"
+                ? { uri: "./external/profile_test/index.html" }
+                : { uri: "file:///android_asset/profile_test/index.html" }
+            }
+            onMessage={event => this.onEventHandler(event.nativeEvent.data)}
+            onLoad={this.onLoadFinished}
+            startInLoadingState
+            javaScriptEnabled
+            mixedContentMode="always"
+            thirdPartyCookiesEnabled
+            allowUniversalAccessFromFileURLs
+          />
+        )}
+        {!profiletest_webview && (
+          <KeyboardAwareScrollView
+            style={{ width: "100%", height: "100%" }}
+            contentContainerStyle={{ alignItems: "center" }}
           >
-            {firstname} {lastname}'s Personal Profile
-          </Text>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.modalVisible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
-              <TouchableWithoutFeedback
-                style={{ flex: 1 }}
-                onPress={() => this.toggleProfile(false)}
-              >
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Image source={home_img} style={{ width: 80, height: 80 }} />
-                <Text style={{ textAlign: "center" }}>
-                  We need to collect some more information from you to create
-                  your secure account.
-                </Text>
-                <Text style={{ fontWeight: "700" }}>
-                  You'll have full access to perks.
-                </Text>
-                <TouchableHighlight
-                  onPress={() => {
-                    this.toggleProfile(false);
-                  }}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>Complete</Text>
-                </TouchableHighlight>
-              </View>
-            </View>
-          </Modal>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.successVisible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
-              <TouchableWithoutFeedback
-                style={{ flex: 1 }}
-                onPress={() => this.toggleSuccess(false)}
-              >
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Image source={balloon_img} style={{ width: 80, height: 80 }} />
-                <Text style={{ fontWeight: "700" }}>Congratulations.</Text>
-                <Text style={{ textAlign: "center" }}>
-                  Your profile is now complete. Access your concierge & full
-                  perks.
-                </Text>
-                <TouchableHighlight
-                  onPress={this.openExplore}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>Explore Bolt</Text>
-                </TouchableHighlight>
-              </View>
-            </View>
-          </Modal>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.errorVisible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
-              <TouchableWithoutFeedback
-                style={{ flex: 1 }}
-                onPress={() => this.toggleError(false)}
-              >
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Image source={error_img} style={{ width: 80, height: 80 }} />
-                <Text style={{ fontWeight: "700" }}>Error.</Text>
-                <Text style={{ textAlign: "center" }}>{error_msg}</Text>
-                <TouchableHighlight
-                  onPress={() => {
-                    this.toggleError(false);
-                  }}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>OK</Text>
-                </TouchableHighlight>
-              </View>
-            </View>
-          </Modal>
-          {account_creating == "true" && (
-            <View
+            <Text
               style={{
-                flex: 1,
-                justifyContent: "center",
-                position: "absolute",
-                right: 0,
-                top: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.4)",
-                width: "100%",
-                height: Metrics.screenHeight,
-                zIndex: 100
+                textAlign: "center",
+                fontFamily: "Gothic A1",
+                fontSize: 20,
+                fontWeight: "700",
+                marginBottom: 0
               }}
             >
-              <ActivityIndicator size="large" color={colors.yellow} />
-            </View>
-          )}
-
-          <View
-            style={{
-              width: "90%",
-              flex: 1,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: colors.white,
-              paddingLeft: 20
-            }}
-          >
+              {firstname} {lastname}'s ID
+            </Text>
             <View
               style={{
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                alignItems: "center"
+                alignItems: "center",
+                marginTop: -10
               }}
             >
               <TouchableOpacity
@@ -519,31 +376,20 @@ class PersonalProfile extends React.Component {
                   source={this.state.ImageSource}
                 />
               </TouchableOpacity>
-              {isloggedIn && (
-                <TouchableOpacity
-                  style={styles.CallAction}
-                  onPress={() => this.LogOut()}
-                >
-                  <Text>LogOut</Text>
-                </TouchableOpacity>
-              )}
-              {email_statusImg === ok_img &&
-                password_statusImg === ok_img &&
-                !activated && (
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => this.Activate()}
-                  >
-                    <Text>Activate</Text>
-                  </TouchableOpacity>
-                )}
+
+              <TouchableOpacity
+                style={styles.CallAction}
+                onPress={() => this.LogOut()}
+              >
+                <Text>LogOut</Text>
+              </TouchableOpacity>
             </View>
             <View
               style={{
-                width: "100%",
+                marginTop: 10,
+                width: "80%",
                 flex: 1,
-                alignItems: "flex-start",
-                paddingLeft: 20
+                alignItems: "flex-start"
               }}
             >
               <View style={styles.Section}>
@@ -553,122 +399,143 @@ class PersonalProfile extends React.Component {
                       ? require(`../../../assets/activated.png`)
                       : require(`../../../assets/nonactivated.png`)
                   }
-                  style={{ width: 18, height: 18, marginRight: 10 }}
+                  style={{ width: 30, height: 30, marginRight: 10 }}
                 />
-                <Text>{activated ? "Active member" : "Non active member"}</Text>
+                <Text style={styles.input}>
+                  {activated ? "Active member" : "Non active member"}
+                </Text>
               </View>
               <View style={styles.Section}>
                 <Image
                   source={require("../../../assets/gift.png")}
-                  style={{ width: 18, height: 18, marginRight: 10 }}
+                  style={{ width: 25, height: 25, marginRight: 10 }}
                 />
                 <Text style={styles.input}>{dob}</Text>
-                <Image
-                  source={dob_statusImg}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
-                />
               </View>
               <View style={styles.Section}>
                 <Image
                   source={require("../../../assets/phone.png")}
-                  style={{ width: 18, height: 18, marginRight: 10 }}
+                  style={{ width: 25, height: 25, marginRight: 10 }}
                 />
-                <Text>{phonenumber}</Text>
-                <Image
-                  source={ok_img}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
-                />
+                <Text style={styles.input}>{phonenumber}</Text>
               </View>
-              <View style={styles.Section}>
-                <Image
-                  source={require("../../../assets/message.png")}
-                  style={{ width: 18, height: 18, marginRight: 10 }}
-                />
-                <Text style={styles.input}>{email}</Text>
-                <Image
-                  source={email_statusImg}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
-                />
-              </View>
-              <View style={styles.Section}>
-                <Image
-                  source={require("../../../assets/key.png")}
-                  style={{ width: 18, height: 18, marginRight: 10 }}
-                />
-                <Text style={styles.input}>{password}</Text>
-                <Image
-                  source={password_statusImg}
-                  style={{ width: 18, height: 18, marginLeft: "auto" }}
-                />
-              </View>
-            </View>
-          </View>
-          {/* <View style={styles.buttonGroup}>
-            <TouchableOpacity style={styles.CallAction}>
-              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Share ID
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.CallAction}>
-              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Edit ID
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.CallAction}>
-              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Save Entry
-              </Text>
-            </TouchableOpacity>
-          </View> */}
-          {/* <View style={styles.buttonContainer}>
-            <Image source={profile_img} style={styles.img} />
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                justifyContent: "center"
-              }}
-            >
-              <Text style={styles.Title}> Basic Profile</Text>
-              <Text style={{ fontSize: 14 }}>Use the basic features</Text>
             </View>
 
-            <TouchableOpacity style={styles.CallAction}>
-              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Activate
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.buttonContainer}>
-            <Image source={member_img} style={styles.img} />
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                justifyContent: "center"
-              }}
-            >
-              <Text style={styles.Title}> Verified profile</Text>
-              <Text style={{ fontSize: 14 }}>Verified ID for extra access</Text>
-            </View>
+            <View style={styles.buttonContainer}>
+              <Image source={member_img} style={styles.img} />
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  justifyContent: "center"
+                }}
+              >
+                <Text style={styles.Title}> Verified profile</Text>
+                <Text style={{ fontSize: 14 }}>
+                  Verified ID for extra access
+                </Text>
+              </View>
 
-            <TouchableOpacity style={styles.CallAction}>
-              <Text style={{ color: colors.darkblue, fontSize: 15 }}>
-                Take Test
+              <TouchableOpacity
+                style={styles.CallAction}
+                onPress={this.startProfileTest}
+              >
+                <Text style={{ color: colors.darkblue, fontSize: 15 }}>
+                  Take Test
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAwareScrollView>
+        )}
+
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableWithoutFeedback
+              style={{ flex: 1 }}
+              onPress={() => this.toggleProfile(false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
+            <View style={styles.modal}>
+              <Image source={home_img} style={{ width: 80, height: 80 }} />
+              <Text style={{ textAlign: "center" }}>
+                We need to collect some more information from you to create your
+                secure account.
               </Text>
-            </TouchableOpacity>
-          </View> */}
-        </View>
-      </KeyboardAwareScrollView>
+              <Text style={{ fontWeight: "700" }}>
+                You'll have full access to perks.
+              </Text>
+              <TouchableHighlight
+                onPress={() => {
+                  this.toggleProfile(false);
+                }}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
+              >
+                <Text style={styles.text}>Complete</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.errorVisible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableWithoutFeedback
+              style={{ flex: 1 }}
+              onPress={() => this.toggleError(false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
+            <View style={styles.modal}>
+              <Image source={error_img} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700" }}>Error.</Text>
+              <Text style={{ textAlign: "center" }}>{error_msg}</Text>
+              <TouchableHighlight
+                onPress={() => {
+                  this.toggleError(false);
+                }}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
+              >
+                <Text style={styles.text}>OK</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+      </View>
     );
   }
 }
 const styles = StyleSheet.create({
   Title: {
     fontSize: 18,
-    fontFamily: "Quicksand",
+    fontFamily: "Gothic A1",
     color: colors.darkblue,
     fontWeight: "700"
   },
@@ -696,8 +563,8 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   img: {
-    width: 55,
-    height: 55
+    width: 40,
+    height: 40
   },
   buttonGroup: {
     width: "90%",
@@ -761,6 +628,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
     marginBottom: 5,
+    height: 25,
     width: "100%"
   },
   Name: {
@@ -771,8 +639,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 10,
     paddingLeft: 10,
-    fontSize: 14,
-    backgroundColor: "transparent"
+    paddingBottom: 0,
+    paddingTop: 0,
+    fontSize: 20
   }
 });
 function mapDispatchToProps(dispatch) {

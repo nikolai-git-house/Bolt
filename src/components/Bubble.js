@@ -58,10 +58,10 @@ export default class Bubble extends React.Component {
         >
           <View style={{ flex: 6 }}>
             {messageType === "man" && <Text style={Styles.name}>{name}</Text>}
-            <Text style={{ fontFamily: "Graphik" }}>{message}</Text>
+            <Text style={{ fontFamily: "Gothic A1" }}>{message}</Text>
           </View>
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
-            <Text style={{ fontFamily: "Graphik" }}>{time}</Text>
+            <Text style={{ fontFamily: "Gothic A1" }}>{time}</Text>
           </View>
         </View>
         {messageType === "robot" && (
@@ -79,7 +79,7 @@ export default class Bubble extends React.Component {
 const Styles = StyleSheet.create({
   concierge: {
     fontSize: 20,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "600",
     marginBottom: 10
   },
@@ -87,7 +87,7 @@ const Styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "600",
     color: colors.hotpink,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     marginBottom: 10
   }
 });

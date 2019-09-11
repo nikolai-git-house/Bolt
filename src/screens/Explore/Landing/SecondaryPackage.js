@@ -50,6 +50,7 @@ export const SecondaryPackage = props => {
             shadowOpacity: 0.2,
             elevation: 3
           }}
+          onPress={props.onPress}
         >
           <Image source={down_arrow_img} style={{ width: 15, height: 15 }} />
         </TouchableOpacity>

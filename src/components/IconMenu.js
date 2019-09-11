@@ -60,21 +60,21 @@ export default class IconMenu extends React.Component {
 }
 const Styles = StyleSheet.create({
   caption: {
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "600",
     fontSize: 10,
     color: "black",
     textAlign: "center"
   },
   subCaption: {
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "500",
     fontSize: 15,
     color: "black",
     textAlign: "center"
   },
   content: {
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontSize: 15,
     fontWeight: "100",
     color: colors.darkblue,

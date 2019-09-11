@@ -7,7 +7,10 @@ import {
   SAVE_HOME,
   SAVE_RENT,
   SAVE_REDIRECT_TOKEN,
-  REMOVE_ALL
+  REMOVE_ALL,
+  SAVE_COMINGFLAG,
+  SAVE_POST,
+  SAVE_ALLUSER
 } from "../actions";
 
 import { createReducer } from "reduxsauce";
@@ -20,7 +23,10 @@ export const initialState = {
   health: null,
   home: null,
   rent: null,
-  redirect_token: null
+  redirect_token: null,
+  posts: [],
+  users: [],
+  screen: "personal"
 };
 
 const saveOnboardingReducer = (state, action) => ({
@@ -71,7 +77,22 @@ const removeAllReducer = (state, action) => ({
   home: null,
   rent: null
 });
-
+const saveComingflagReducer = (state, action) => ({
+  ...state,
+  coming_flag: action.coming_flag
+});
+const savePostsReducer = (state, action) => ({
+  ...state,
+  posts: action.posts
+});
+const saveUsersReducer = (state, action) => ({
+  ...state,
+  users: action.users
+});
+const saveScreenReducer = (state, action) => ({
+  ...state,
+  screen: action.screen
+});
 const actionHandlers = {
   SAVE_ONBOARDING: saveOnboardingReducer,
   SAVE_UID: saveUIDReducer,
@@ -81,6 +102,10 @@ const actionHandlers = {
   SAVE_HOME: saveHomeReducer,
   SAVE_RENT: saveRentReducer,
   SAVE_REDIRECT_TOKEN: saveRedirectTokenReducer,
-  REMOVE_ALL: removeAllReducer
+  REMOVE_ALL: removeAllReducer,
+  SAVE_COMINGFLAG: saveComingflagReducer,
+  SAVE_POST: savePostsReducer,
+  SAVE_ALLUSER: saveUsersReducer,
+  SAVE_SCREEN: saveScreenReducer
 };
 export default createReducer(initialState, actionHandlers);

@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { View, TextInput, Image, StyleSheet, Text } from "react-native";
-
+import colors from "../theme/Colors";
 class Subscription extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      url: require("../assets/packages/Product_Icons/cycle.png")
+      url: require("../assets/Explore/packages/bike.jpg")
     };
   }
   componentDidMount() {
@@ -13,26 +13,25 @@ class Subscription extends React.Component {
     let url = "";
     switch (pkgName) {
       case "Happy Cycling Pack":
-        url = require("../assets/packages/Product_Icons/cycle.png");
+        url = require("../assets/Explore/packages/bike.jpg");
         break;
       case "Health & Fitness Pack":
-        url = require("../assets/packages/Product_Icons/health.png");
+        url = require("../assets/Explore/packages/health.jpg");
         break;
       case "Membership Pack":
-        url = require("../assets/packages/Product_Icons/membership.png");
+        url = require("../assets/Explore/packages/membership.jpg");
         break;
       case "Pet Friendly Renting Pack":
-        url = require("../assets/packages/Product_Icons/pet.png");
+        url = require("../assets/Explore/packages/pet.jpg");
         break;
       case "Serviced Home Pack":
-        url = require("../assets/packages/Product_Icons/home.png");
+        url = require("../assets/Explore/packages/home.jpg");
         break;
       case "Silver Renter Pack":
-        url = require("../assets/packages/Product_Icons/renter.png");
+        url = require("../assets/Explore/packages/silver.jpg");
         break;
       case "Gold Renter Pack":
-        url = require("../assets/packages/Product_Icons/gold.png");
-        break;
+        url = require("../assets/Explore/packages/gold.jpg");
     }
     this.setState({ url: url });
   }

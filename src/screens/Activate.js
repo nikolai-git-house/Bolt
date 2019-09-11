@@ -239,8 +239,8 @@ const Styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardborder
   },
-  Title: { fontSize: 30, fontFamily: "Quicksand", fontWeight: "200" },
-  SubTitle: { fontSize: 15, fontFamily: "Quicksand", textAlign: "center" },
+  Title: { fontSize: 30, fontFamily: "Gothic A1", fontWeight: "200" },
+  SubTitle: { fontSize: 15, fontFamily: "Gothic A1", textAlign: "center" },
   CallAction: {
     width: "80%",
     alignItems: "center",

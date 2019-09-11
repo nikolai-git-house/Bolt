@@ -13,6 +13,7 @@ import GestureRecognizer, {
 } from "react-native-swipe-gestures";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
+import TopImage from "../../components/TopImage";
 import { Metrics } from "../../theme";
 import Circle from "../../components/Circle";
 import TextBubble from "../../components/TextBubble";
@@ -39,6 +40,7 @@ export default class IntroOne extends React.Component {
         config={config}
       >
         <View style={styles.maincontainer}>
+          <TopImage />
           <Logo />
           <Image
             source={require("../../assets/onboarding/set4.png")}

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { View, Image, Text, Animated, Easing, StyleSheet } from "react-native";
+import Sound from "react-native-sound";
 import styled from "styled-components";
 import colors from "../../theme/Colors";
 import * as Animatable from "react-native-animatable";
@@ -9,9 +10,15 @@ import * as Animatable from "react-native-animatable";
 //   border-radius: 10px;
 //   background-color: #fff;
 // `;
+var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+  if (error) {
+    console.log("failed to load the sound", error);
+    return;
+  }
+});
+bamboo.setVolume(0.5);
 class BubbleText extends React.Component {
   constructor(props) {
-    console.log("MessageItem");
     super(props);
     this.animatedValue = new Animated.Value(0);
     this.loadinganimatedValue = new Animated.Value(0);
@@ -21,8 +28,9 @@ class BubbleText extends React.Component {
   }
 
   componentDidMount() {
-    const { typing } = this.props;
+    const { typing, message } = this.props;
     this.setState({ typing: typing });
+    if (message.message && message.type === "agency") bamboo.play();
   }
   render() {
     let { typing } = this.state;
@@ -114,8 +122,8 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   bubble_text: {
-    fontFamily: "Graphik",
-    fontWeight: "100",
+    fontFamily: "Gothic A1",
+    fontWeight: "300",
     lineHeight: 20,
     color: "#555",
     fontSize: 16
@@ -133,8 +141,8 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   userbubble_text: {
-    fontFamily: "Graphik",
-    fontWeight: "100",
+    fontFamily: "Gothic A1",
+    fontWeight: "300",
     lineHeight: 20,
     color: colors.darkblue,
     fontSize: 17

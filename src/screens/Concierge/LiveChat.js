@@ -13,12 +13,21 @@ import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
+import TopImage from "../../components/TopImage";
 import { Metrics } from "../../theme";
 import BubbleText from "./BubbleText";
 import MessageInput from "../../components/MessageInput";
+import Sound from "react-native-sound";
 import Firebase from "../../firebasehelper";
 const TAB_HEIGHT = 50;
 var timer;
+var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+  if (error) {
+    console.log("failed to load the sound", error);
+    return;
+  }
+});
+bamboo.setVolume(0.5);
 class LiveChat extends React.Component {
   constructor(props) {
     super(props);
@@ -106,6 +115,7 @@ class LiveChat extends React.Component {
   SendMessage = () => {
     const { message_txt } = this.state;
     let self = this;
+    bamboo.play();
     Keyboard.dismiss();
     this.setState({ keyboard: "invisible", message_txt: "" });
     if (message_txt) this.addMessage({ type: "user", message: message_txt });
@@ -141,11 +151,12 @@ class LiveChat extends React.Component {
             marginTop: -29
           }}
         >
+          <TopImage />
           <Logo />
         </View>
         <ScrollView
           ref="scrollView"
-          style={{ marginTop: 80 }}
+          style={{ marginTop: 80, paddingLeft: 16 }}
           contentContainerStyle={{
             width: "100%",
 
@@ -191,8 +202,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     paddingTop: 29,
-    backgroundColor: colors.white,
-    paddingLeft: 16
+    backgroundColor: colors.white
   },
   CalltoAction: {
     opacity: 0.8,
@@ -208,7 +218,7 @@ const styles = StyleSheet.create({
   button: {
     color: colors.white,
     fontSize: 13,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "100",
     paddingTop: 10,
     paddingBottom: 10,

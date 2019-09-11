@@ -10,18 +10,27 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Sound from "react-native-sound";
 import colors from "../../theme/Colors";
 import Metrics from "../../theme/Metrics";
+import TopImage from "../../components/TopImage";
 import Logo from "../../components/Logo";
-import { getToken } from "../../apis/Auth";
-import {
-  grant_type,
-  client_id,
-  client_secret,
-  username,
-  password
-} from "../../utils/Constants";
 
+// var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+//   if (error) {
+//     console.log("failed to load the sound", error);
+//     return;
+//   }
+//   // Play the sound with an onEnd callback
+//   bamboo.play(success => {
+//     if (success) {
+//       console.log("successfully finished playing");
+//     } else {
+//       console.log("playback failed due to audio decoding errors");
+//     }
+//   });
+// });
+// bamboo.setVolume(0.5);
 class Landing extends React.Component {
   constructor(props) {
     super(props);
@@ -37,87 +46,84 @@ class Landing extends React.Component {
   };
   render() {
     return (
-      <KeyboardAwareScrollView
-        style={{ width: Metrics.screenWidth, height: Metrics.screenHeight }}
+      <View
+        style={{
+          width: "100%",
+          flex: 1,
+          height: Metrics.screenHeight,
+          alignItems: "center",
+          backgroundColor: colors.lightgrey
+        }}
       >
+        <TopImage />
+        <Logo />
         <View
           style={{
+            marginTop: 100,
             width: "100%",
-            height: Metrics.screenHeight,
-            alignItems: "center",
+            height: "80%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
             backgroundColor: colors.lightgrey
           }}
         >
-          <Logo />
-          <View
-            style={{
-              position: "absolute",
-              top: 90,
-              left: 0,
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              backgroundColor: colors.lightgrey
-            }}
-          >
-            <View style={Styles.JoinProfileContainer}>
-              <Text style={[Styles.Title, { color: colors.darkblue }]}>
-                Join Bolt
-              </Text>
-              <Image
-                source={require("../../assets/Landing/join_bolt.png")}
-                style={{ width: 60, height: 60 }}
-              />
-              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-                Take a profile test (6 mins){"\n"} Insider perks, savings &
-                packages
-                {"\n"} Access the best properties
-              </Text>
-              <TouchableOpacity
-                onPress={this.joinMember}
-                style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
+          <View style={Styles.JoinProfileContainer}>
+            <Text style={[Styles.Title, { color: colors.darkblue }]}>
+              Join Bolt
+            </Text>
+            <Image
+              source={require("../../assets/Landing/join_bolt.png")}
+              style={{ width: 60, height: 60 }}
+            />
+            <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+              Take a profile test (6 mins){"\n"} Insider perks, savings &
+              packages
+              {"\n"} Access the best properties
+            </Text>
+            <TouchableOpacity
+              onPress={this.joinMember}
+              style={[Styles.CallAction, { backgroundColor: colors.yellow }]}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.darkblue,
+                  fontWeight: "500"
+                }}
               >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.darkblue,
-                    fontWeight: "500"
-                  }}
-                >
-                  Join Now
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={Styles.SignInContainer}>
-              <Text style={[Styles.Title, { color: colors.darkblue }]}>
-                Already a member
+                Join Now
               </Text>
-              <Image
-                source={require("../../assets/Landing/already_member.png")}
-                style={{ width: 60, height: 60 }}
-              />
-              <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
-                Those who have joined the club.
-              </Text>
-              <TouchableOpacity
-                onPress={this.signIn}
-                style={[Styles.CallAction, { backgroundColor: colors.grey }]}
+            </TouchableOpacity>
+          </View>
+          <View style={Styles.SignInContainer}>
+            <Text style={[Styles.Title, { color: colors.darkblue }]}>
+              Already a member
+            </Text>
+            <Image
+              source={require("../../assets/Landing/already_member.png")}
+              style={{ width: 60, height: 60 }}
+            />
+            <Text style={[Styles.SubTitle, { color: colors.darkblue }]}>
+              Those who have joined the club.
+            </Text>
+            <TouchableOpacity
+              onPress={this.signIn}
+              style={[Styles.CallAction, { backgroundColor: colors.grey }]}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.darkblue,
+                  fontWeight: "500"
+                }}
               >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.darkblue,
-                    fontWeight: "500"
-                  }}
-                >
-                  Sign me in
-                </Text>
-              </TouchableOpacity>
-            </View>
+                Sign me in
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAwareScrollView>
+      </View>
     );
   }
 }
@@ -150,8 +156,8 @@ const Styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.cardborder
   },
-  Title: { fontSize: 30, fontFamily: "Quicksand", fontWeight: "200" },
-  SubTitle: { fontSize: 15, fontFamily: "Quicksand", textAlign: "center" },
+  Title: { fontSize: 30, fontFamily: "Gothic A1", fontWeight: "200" },
+  SubTitle: { fontSize: 15, fontFamily: "Gothic A1", textAlign: "center" },
   CallAction: {
     width: "80%",
     alignItems: "center",

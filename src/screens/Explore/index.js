@@ -11,24 +11,27 @@ import {
 import { createAppContainer, createStackNavigator } from "react-navigation";
 
 import Landing from "./Landing";
+import Landing_Toggle from "./Landing_Toggle";
 import Main from "./Main";
 import Pack from "./Pack";
-import Purchase from "./Purchase";
 import DirectDebit from "./DirectDebitSetup";
-
+import PaymentSetup from "./PaymentSetup";
 export default createStackNavigator(
   {
-    Main: {
+    LandExplore: {
+      screen: Landing
+    },
+    Toggle: {
+      screen: Landing_Toggle
+    },
+    MainList: {
       screen: Main
     },
     Pack: {
       screen: Pack
     },
-    Purchase: {
-      screen: Purchase
-    },
-    DirectDebit: {
-      screen: DirectDebit
+    PaymentSetup: {
+      screen: PaymentSetup
     }
   },
   {

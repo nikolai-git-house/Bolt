@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "922343831809",
+    "firebase_url": "https://boltconcierge-2f0f9.firebaseio.com",
+    "project_id": "boltconcierge-2f0f9",
+    "storage_bucket": "boltconcierge-2f0f9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922343831809:android:cac3517c4e5b60cb",
+        "android_client_info": {
+          "package_name": "com.pin.boltbot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "922343831809-qejg6ghjcos3pc74rp47vgmi4m1vkfag.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYGIC9YjyBndQD1xMmKb_von4gSvwTrIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "922343831809-qejg6ghjcos3pc74rp47vgmi4m1vkfag.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "922343831809-drfra1qi6118g3ptveopkndol32ulmaa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "pinbolt.com.app",
+                "app_store_id": "1447256534"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

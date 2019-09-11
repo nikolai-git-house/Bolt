@@ -15,7 +15,10 @@ export const SAVE_HOME = "SAVE_HOME";
 export const SAVE_RENT = "SAVE_RENT";
 export const SAVE_REDIRECT_TOKEN = "SAVE_REDIRECT_TOKEN";
 export const REMOVE_ALL = "REMOVE_ALL";
-
+export const SAVE_COMINGFLAG = "SAVE_COMINGFLAG";
+export const SAVE_POST = "SAVE_POST";
+export const SAVE_ALLUSER = "SAVE_ALLUSER";
+export const SAVE_SCREEN = "SAVE_SCREEN";
 export const saveOnboarding = basicInfo => ({
   type: SAVE_ONBOARDING,
   basic: basicInfo
@@ -47,4 +50,20 @@ export const saveRedirectToken = token => ({
 });
 export const removeAll = () => ({
   type: REMOVE_ALL
+});
+export const saveComingflag = flag => ({
+  type: SAVE_COMINGFLAG,
+  coming_flag: flag
+});
+export const savePosts = posts => ({
+  type: SAVE_POST,
+  posts: posts
+});
+export const saveUsers = users => ({
+  type: SAVE_ALLUSER,
+  users: users
+});
+export const saveScreen = screen => ({
+  type: SAVE_SCREEN,
+  screen: screen
 });

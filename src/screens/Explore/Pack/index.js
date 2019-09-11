@@ -7,14 +7,16 @@ import {
   Image,
   TouchableWithoutFeedback,
   ActivityIndicator,
-  Modal
+  Modal,
+  AsyncStorage
 } from "react-native";
 import { connect } from "react-redux";
 import colors from "../../../theme/Colors";
 import Logo from "../../../components/Logo";
+import TopImage from "../../../components/TopImage";
 import { Metrics } from "../../../theme";
 import Firebase from "../../../firebasehelper";
-import { createSubscription } from "../../../gocardlesshelper";
+import { createPlan, createSubscription } from "../../../apis/index";
 import { saveOnboarding } from "../../../Redux/actions/index";
 
 const error_img = require("../../../assets/popup/error.png");
@@ -35,7 +37,8 @@ class Pack extends React.Component {
       error_msg: "",
       confirm_msg: "",
       loadingdata: false,
-      confirm_ttl: ""
+      confirm_ttl: "",
+      confirming: false
     };
   }
   componentDidMount() {
@@ -76,72 +79,78 @@ class Pack extends React.Component {
     const { isgroup, price, confirm_msg } = this.state;
     const { uid, basic } = this.props;
     const groupId = basic.groupId;
-    this.setState({ loadingdata: true });
-    let isGroupLeader = await Firebase.isGroupLeader(uid, groupId);
-    this.setState({ loadingdata: false });
-    console.log("Am I groupLeader", isGroupLeader);
-    if (!isgroup) {
-      this.setState({
-        error_msg: `The package is not available to split between your group.\n Please select "Pay It".`
-      });
-      this.toggleError(true);
-    } else if (!isGroupLeader) {
-      this.setState({
-        error_msg: `You are not leader of this group. As per group package rule, only leader can press "Split It".`
-      });
-      this.toggleError(true);
-    } else {
-      this.setState({ imgUrl: require("../../../assets/popup/split.png") });
+    if (groupId) {
       this.setState({ loadingdata: true });
-      Firebase.findFriends(uid).then(res => {
-        if (res.length !== 0) {
-          console.log("friends", res);
-          const count = res.length;
-          const final_price = price / count;
+      let isGroupLeader = await Firebase.isGroupLeader(uid, groupId);
+      this.setState({ loadingdata: false });
+      console.log("Am I groupLeader", isGroupLeader);
+      if (!isgroup) {
+        this.setState({
+          error_msg: `The package is not available to split between your group.\n Please select "Pay It".`
+        });
+        this.toggleError(true);
+      } else if (!isGroupLeader) {
+        this.setState({
+          error_msg: `You are not leader of this group. As per group package rule, only leader can press "Split It".`
+        });
+        this.toggleError(true);
+      } else {
+        this.setState({ imgUrl: require("../../../assets/popup/split.png") });
+        this.setState({ loadingdata: true });
+        Firebase.findFriends(uid).then(res => {
+          if (res.length !== 0) {
+            console.log("friends", res);
+            const count = res.length;
+            const final_price = price / count;
 
-          let usernames = res.map(item => {
-            return new Promise((resolve, reject) => {
-              Firebase.getUserDatafromUID(item)
-                .then(result => {
-                  const fullname = result.firstname + " " + result.lastname;
-                  resolve({
-                    fullname: fullname,
-                    ispayable: result.mandate ? true : false
+            let usernames = res.map(item => {
+              return new Promise((resolve, reject) => {
+                Firebase.getUserDatafromUID(item)
+                  .then(result => {
+                    const fullname = result.firstname + " " + result.lastname;
+                    resolve({
+                      fullname: fullname,
+                      ispayable: result.customer_id ? true : false
+                    });
+                  })
+                  .catch(err => {
+                    reject(err);
                   });
-                })
-                .catch(err => {
-                  reject(err);
-                });
+              });
             });
-          });
-          Promise.all(usernames).then(result => {
-            console.log("usernames", result);
-            this.setState({ loadingdata: false });
-            let username_list = "";
-            let ispayable = true;
-            result.forEach(item => {
-              username_list += `${item.fullname} - £${final_price}\n `;
+            Promise.all(usernames).then(result => {
+              console.log("usernames", result);
+              this.setState({ loadingdata: false });
+              let username_list = "";
+              let ispayable = true;
+              result.forEach(item => {
+                username_list += `${item.fullname} - £${final_price}\n `;
+              });
+              this.setState({
+                confirm_msg: `${username_list} \nOnce you confirm Bolt will:\n 1. Create your monthly subscription\n 2.Invite your group to subscribe`
+              });
+              this.setState({
+                confirm_ttl:
+                  "You've chosen to split the package between your housemates."
+              });
             });
+          } else {
             this.setState({
-              confirm_msg: `${username_list} \nOnce you confirm Bolt will:\n 1. Create your monthly subscription\n 2.Invite your group to subscribe`
+              confirm_msg: `You are not member of any group. You will pay your self.Are you sure to pay £${price} your self?`
             });
-            this.setState({
-              confirm_ttl:
-                "You've chosen to split the package between your housemates."
-            });
-          });
-        } else {
-          this.setState({
-            confirm_msg: `You are not member of any group. You will pay your self.Are you sure to pay £${price} your self?`
-          });
-        }
-        this.toggleConfirm(true);
+          }
+          this.toggleConfirm(true);
+        });
+      }
+    } else {
+      this.setState({
+        error_msg: `Sorry. You are not a member of any group.`
       });
+      this.toggleError(true);
     }
   };
   onPayClicked = () => {
     const { uid } = this.props;
-    const { price, confirm_msg } = this.state;
     this.setState({ imgUrl: url });
     this.setState({
       confirm_msg: `Once you confirm, Bolt will create your monthly subscription,
@@ -154,27 +163,22 @@ class Pack extends React.Component {
     this.toggleConfirm(true);
     console.log("uid", uid);
   };
-  createSubscription = (price, uid) => {
+  createSubscription = (price, pkgName, uid) => {
     return new Promise((resolve, reject) => {
       Firebase.getUserDatafromUID(uid)
-        .then(res => {
-          if (res.mandate) {
-            createSubscription(res.mandate, 100 * price)
-              .then(result => {
-                console.log("Payment result", result);
-                if (result.ok) {
-                  resolve(result);
-                } else {
-                  let response = JSON.parse(result._bodyInit);
-                  console.log("reject this error", response.error);
-                  const error = response.error.message;
-                  reject(error);
-                }
-              })
-              .catch(err => {
-                console.log("Error", err);
-                reject(err);
-              });
+        .then(async res => {
+          if (res.customer_id) {
+            let amount = 100 * price;
+            //create plan
+            let plan_data = await createPlan(amount, pkgName);
+            let plan_id = plan_data.data.id;
+            //create subscription
+            let subscription_data = await createSubscription(
+              res.customer_id,
+              plan_id
+            );
+            let subscription_id = subscription_data.data.id;
+            resolve(subscription_id);
           }
         })
         .catch(err => {
@@ -184,43 +188,31 @@ class Pack extends React.Component {
   };
   confirmPay = () => {
     this.toggleConfirm(false);
-    const { price, pkgName } = this.state;
+    const { price, pkgName, confirming } = this.state;
     const { uid, basic } = this.props;
-    // setTimeout(() => this.toggleSuccess(true), 2000);
-    // console.log("Subscription is created!");
-    // let temp = [];
-    // Firebase.getUserDatafromUID(uid).then(res => {
-    //   let profile = res;
-    //   if (profile.packages) temp = profile.packages;
-    //   temp.push(pkgName);
-    //   profile.packages = temp;
-    //   Firebase.updateUserData(uid, profile).then(result => {
-    //     console.log("profile is updated!");
-    //     let new_basic = basic;
-    //     new_basic["packages"] = temp;
-    //     this.props.dispatch(saveOnboarding(new_basic));
-    //   });
-    // });
-    this.createSubscription(price, uid)
+    this.setState({ confirming: true });
+    this.createSubscription(price, pkgName, uid)
       .then(res => {
-        console.log("Subscription is created!");
+        console.log("Subscription is created!", res);
         let temp = [];
-        this.toggleSuccess(true);
         Firebase.getUserDatafromUID(uid).then(res => {
           let profile = res;
           if (profile.packages) temp = profile.packages;
-          temp.push(pkgName);
+          temp.push({ caption: pkgName, price: price });
           profile.packages = temp;
           Firebase.updateUserData(uid, profile).then(result => {
             console.log("profile is updated!");
             let new_basic = basic;
             new_basic["packages"] = temp;
             this.props.dispatch(saveOnboarding(new_basic));
+            AsyncStorage.setItem("profile", JSON.stringify(new_basic));
+            this.setState({ confirming: false });
+            this.toggleSuccess(true);
           });
         });
       })
       .catch(err => {
-        this.setState({ error_msg: err });
+        this.setState({ error_msg: err, confirming: false });
         this.toggleError(true);
         console.log("Error", err);
       });
@@ -249,7 +241,8 @@ class Pack extends React.Component {
       confirm_ttl,
       loadingdata,
       imgUrl,
-      error_msg
+      error_msg,
+      confirming
     } = this.state;
     return (
       <View
@@ -274,7 +267,7 @@ class Pack extends React.Component {
         >
           <Text
             style={{
-              fontFamily: "Quicksand",
+              fontFamily: "Gothic A1",
               color: colors.blue,
               fontSize: 20
             }}
@@ -282,8 +275,8 @@ class Pack extends React.Component {
             GoBack
           </Text>
         </TouchableOpacity>
+        <TopImage />
         <Logo />
-
         <View
           style={{
             position: "absolute",
@@ -336,20 +329,25 @@ class Pack extends React.Component {
               Pick up the full booking.{"\n"}
               You'll pay over time or in full,managing our entire booking.{"\n"}
             </Text>
-            <TouchableOpacity
-              style={[Styles.CallAction, { backgroundColor: colors.grey }]}
-              onPress={this.onPayClicked}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: colors.darkblue,
-                  fontWeight: "500"
-                }}
+            {confirming && (
+              <ActivityIndicator size="large" color={colors.darkblue} />
+            )}
+            {!confirming && (
+              <TouchableOpacity
+                style={[Styles.CallAction, { backgroundColor: colors.grey }]}
+                onPress={this.onPayClicked}
               >
-                Pay It
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.darkblue,
+                    fontWeight: "500"
+                  }}
+                >
+                  Pay It
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         <Modal
@@ -571,8 +569,8 @@ const Styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     padding: 10
   },
-  Title: { fontSize: 30, fontFamily: "Quicksand", fontWeight: "200" },
-  SubTitle: { fontSize: 15, fontFamily: "Quicksand", textAlign: "center" },
+  Title: { fontSize: 30, fontFamily: "Gothic A1", fontWeight: "200" },
+  SubTitle: { fontSize: 15, fontFamily: "Gothic A1", textAlign: "center" },
   CallAction: {
     width: 100,
     alignItems: "center",

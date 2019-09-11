@@ -11,21 +11,25 @@ import {
   ActivityIndicator
 } from "react-native";
 import { connect } from "react-redux";
+import { saveComingflag } from "../../../Redux/actions/index";
 import colors from "../../../theme/Colors";
 import Logo from "../../../components/Logo";
+import TopImage from "../../../components/TopImage";
 import { Metrics } from "../../../theme";
 import PackCarousel from "../../../components/PackCarousel";
 import { sliderWidth, itemWidth } from "../../../theme/Styles";
 import Firebase from "../../../firebasehelper";
+import SubscribeButton from "./SubscribeButton";
+import SwitchButton from "./SwitchButton";
 const pet_img = require("../../../assets/packages/pets.png");
 const lightning_img = require("../../../assets/packages/lightning.png");
 const group_img = require("../../../assets/packages/group.png");
 const close_image = require("../../../assets/Explore/close-button.png");
 const error_img = require("../../../assets/popup/error.png");
 const ballon_image = require("../../../assets/popup/balloon.png");
-const carousel_height = Metrics.screenHeight - 210;
+const carousel_height =
+  Metrics.screenHeight > 750 ? 500 : Metrics.screenHeight - 240;
 const axios = require("axios");
-
 let isgroup = 0;
 let price = 0;
 let imgName = "";
@@ -44,14 +48,24 @@ class Main extends React.Component {
       loadingdata: false,
       btn_able: false,
       error_msg: "",
-      coming_flag: false
+      coming_flag: false,
+      payoption: "subscriptions"
     };
   }
   componentDidMount() {
     const { packages } = this.props.basic;
     console.log("profile", this.props.basic.renter_owner);
     console.log("packages owned by user", packages);
+    this.props.navigation.addListener("willFocus", this.catchPreviousScreen);
   }
+  catchPreviousScreen = () => {
+    console.log("params", this.props.navigation.state.params);
+    if (this.props.navigation.state.params) {
+      const { packageRequired } = this.props.navigation.state.params;
+      console.log("packageRequired", packageRequired);
+      this.setState({ packageRequired: packageRequired });
+    }
+  };
   componentWillReceiveProps(nextProps) {
     const { packages } = nextProps.basic;
     console.log("packages", packages);
@@ -113,10 +127,11 @@ class Main extends React.Component {
       if (res) {
         if (!coming_flag)
           Firebase.isPaymentReady(uid).then(async result => {
+            this.setState({ loadingdata: false });
             if (result) {
               let isPackageGot = await Firebase.isPackageGot(uid, pkgName);
               console.log("isPackageGot", isPackageGot);
-              this.setState({ loadingdata: false });
+
               if (!isPackageGot)
                 this.navigateTo("Pack", {
                   price: price,
@@ -131,7 +146,7 @@ class Main extends React.Component {
                 });
                 this.toggleError("error", true);
               }
-            } else this.toggleError("payment", true);
+            } else this.createStripe();
           });
         else {
           this.toggleError("email", true);
@@ -153,7 +168,8 @@ class Main extends React.Component {
       } else {
         this.setState({
           error_msg:
-            "You are not active member. Please activate your profile to access purchase."
+            "You are not active member. Please activate your profile to access purchase.",
+          loadingdata: false
         });
         this.toggleError("error", true);
       }
@@ -165,12 +181,11 @@ class Main extends React.Component {
   };
   updateButton = pkgName => {
     if (
-      pkgName === "Membership Pack" ||
       pkgName === "Health & Fitness Pack" ||
       pkgName === "Happy Cycling Pack"
     ) {
-      this.setState({ coming_flag: true });
-    } else this.setState({ coming_flag: false });
+      this.props.dispatch(saveComingflag(true));
+    } else this.props.dispatch(saveComingflag(false));
   };
   getCurrentSlider = (var1, var2, var3, var4) => {
     const { uid } = this.props;
@@ -178,19 +193,21 @@ class Main extends React.Component {
     price = var2;
     imgName = var3;
     pkgName = var4;
-    setTimeout(() => this.updateButton(pkgName), 500);
+    this.updateButton(pkgName);
   };
-  createDirectDebit = () => {
-    this.toggleError("payment", false);
-    this.navigateTo("DirectDebit");
+  createStripe = () => {
+    this.navigateTo("PaymentSetup");
+  };
+  onChoosePay = option => {
+    this.setState({ payoption: option });
   };
   render() {
     const {
-      bolt_height,
       renter_owner,
       loadingdata,
       error_msg,
-      coming_flag
+      packageRequired,
+      payoption
     } = this.state;
     let height = 200;
     switch (Platform.OS) {
@@ -204,6 +221,7 @@ class Main extends React.Component {
     return (
       <View
         style={{
+          flex: 1,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -213,205 +231,166 @@ class Main extends React.Component {
         <View
           style={{
             width: "100%",
-            height: 80,
+            height: 90,
             display: "flex",
             alignItems: "center",
             paddingTop: 50
           }}
         >
+          <TopImage />
           <Logo />
         </View>
+
         <View
           style={{
             width: "100%",
-            height: carousel_height,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             paddingBottom: 20
           }}
         >
-          <PackCarousel
-            getActive={async (isgroup, price, imgName, pkgName) => {
-              this.getCurrentSlider(isgroup, price, imgName, pkgName);
-            }}
-            coming_flag={coming_flag}
-            renter_owner={renter_owner}
-          />
-        </View>
-        {loadingdata && (
-          <ActivityIndicator size="large" color={colors.darkblue} />
-        )}
-        {!loadingdata && (
-          <TouchableOpacity
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              width: itemWidth,
-              height: 45,
-              borderRadius: 15,
-              backgroundColor: coming_flag ? "#FFE366" : colors.green,
-              shadowOffset: { height: 1, width: 1 },
-              shadowColor: colors.darkblue,
-              shadowOpacity: 0.1,
-              elevation: 3
-            }}
-            onPress={this.BoltOn}
-          >
-            <Text style={{ fontSize: 20 }}>
-              {coming_flag ? "Pre register" : "Subscribe"}
-            </Text>
-          </TouchableOpacity>
-        )}
-        <View
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: itemWidth,
-            height: 40
-          }}
-        >
-          <Text>Press concierge to chat about the package</Text>
-        </View>
-        <Animated.View
-          style={{
-            flex: 1,
-            position: "absolute",
-            left: 0,
-            width: "100%",
-            bottom: 0,
-            display: "flex",
-            height: bolt_height,
-            backgroundColor: colors.white
-          }}
-        >
           <View
-            style={{ width: "100%", display: "flex", alignItems: "flex-end" }}
+            style={{
+              width: "100%",
+              paddingBottom: 10,
+              height: carousel_height
+            }}
           >
-            <TouchableOpacity onPress={this.Bolt}>
-              <Image source={close_image} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
+            <PackCarousel
+              getActive={async (isgroup, price, imgName, pkgName) => {
+                this.getCurrentSlider(isgroup, price, imgName, pkgName);
+              }}
+              onLoad={() => console.log("loaded")}
+              renter_owner={renter_owner}
+              fromOption_packageRequired={packageRequired}
+            />
           </View>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.error_Visible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+          {loadingdata && (
+            <ActivityIndicator size="large" color={colors.darkblue} />
+          )}
+          {!loadingdata && (
+            <SubscribeButton BoltOn={this.BoltOn} payoption={payoption} />
+          )}
+        </View>
+
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.error_Visible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => this.toggleError("error", false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableOpacity>
+            <View style={styles.modal}>
+              <Image source={error_img} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700" }}>Error</Text>
+              <Text style={{ textAlign: "center" }}>{error_msg}</Text>
               <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => this.toggleError("error", false)}
+                onPress={() => {
+                  this.toggleError("error", false);
+                }}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
               >
-                <View style={{ flex: 1 }} />
+                <Text style={styles.text}>OK</Text>
               </TouchableOpacity>
-              <View style={styles.modal}>
-                <Image source={error_img} style={{ width: 80, height: 80 }} />
-                <Text style={{ fontWeight: "700" }}>Error</Text>
-                <Text style={{ textAlign: "center" }}>{error_msg}</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.toggleError("error", false);
-                  }}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>OK</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </Modal>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.email_Visible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+          </View>
+        </Modal>
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.email_Visible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => this.toggleError("email", false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableOpacity>
+            <View style={styles.modal}>
+              <Image source={ballon_image} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700" }}>Congratulations.</Text>
+              <Text style={{ textAlign: "center" }}>
+                You'll be the first to know when this package is available.
+                We'll also credit you 10 tokens to redeem on your subscription.
+                Hang tight.
+              </Text>
               <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => this.toggleError("email", false)}
+                onPress={() => {
+                  this.toggleError("email", false);
+                }}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
               >
-                <View style={{ flex: 1 }} />
+                <Text style={styles.text}>OK</Text>
               </TouchableOpacity>
-              <View style={styles.modal}>
-                <Image
-                  source={ballon_image}
-                  style={{ width: 80, height: 80 }}
-                />
-                <Text style={{ fontWeight: "700" }}>Congratulations.</Text>
-                <Text style={{ textAlign: "center" }}>
-                  You'll be the first to know when this package is available.
-                  We'll also credit you 10 tokens to redeem on your
-                  subscription. Hang tight.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    this.toggleError("email", false);
-                  }}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>OK</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </Modal>
-          <Modal
-            animationType={"fade"}
-            transparent={true}
-            visible={this.state.error_payment_Visible}
-            onRequestClose={() => {}}
-          >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+          </View>
+        </Modal>
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.error_payment_Visible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => this.toggleError("payment", false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableOpacity>
+            <View style={styles.modal}>
+              <Image source={error_img} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700" }}>Error</Text>
+              <Text style={{ textAlign: "center" }}>
+                You didn't add your credit card info as payment setup. Do you
+                want to add it? It only takes one minute to finish all.
+              </Text>
               <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => this.toggleError("payment", false)}
+                onPress={this.createStripe}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
               >
-                <View style={{ flex: 1 }} />
+                <Text style={styles.text}>OK</Text>
               </TouchableOpacity>
-              <View style={styles.modal}>
-                <Image source={error_img} style={{ width: 80, height: 80 }} />
-                <Text style={{ fontWeight: "700" }}>Error</Text>
-                <Text style={{ textAlign: "center" }}>
-                  You didn't create Go Cardless Direct Debit as payment setup.
-                  Do you want to create it? It takes a few minute to finish all.
-                </Text>
-                <TouchableOpacity
-                  onPress={this.createDirectDebit}
-                  style={{
-                    backgroundColor: colors.yellow,
-                    width: 100,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderColor: colors.grey,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text style={styles.text}>OK</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </Modal>
-        </Animated.View>
+          </View>
+        </Modal>
       </View>
     );
   }

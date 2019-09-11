@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 import {
   Platform,
-  StyleSheet,
-  Text,
-  AsyncStorage,
   View,
   TouchableOpacity,
-  Image
+  Image,
+  ActivityIndicator,
+  Fragment
 } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import colors from "../theme/Colors";
@@ -16,32 +15,64 @@ import PackCard from "../components/PackCard";
 const IS_ANDROID = Platform.OS === "android";
 const SLIDER_1_FIRST_ITEM = 0;
 let all_packages = [];
-Firebase.getPackagesData(function(res) {
-  for (var i in res) all_packages.push(res[i]);
-});
+
 export default class PackCarousel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       activeSlide: SLIDER_1_FIRST_ITEM,
-      packages: []
+      packages: [],
+      pkgloading: false
     };
   }
   _renderItem({ item, index }) {
     return <PackCard data={item} key={index} />;
   }
-  componentDidMount() {
-    console.log("renter_owner", this.props.renter_owner);
-    const renter_owner = this.props.renter_owner;
+  componentWillReceiveProps(nextProps) {
+    const { fromOption_packageRequired } = nextProps;
+    console.log("fromOption_packageRequired", fromOption_packageRequired);
+    this.setState({ fromOption_packageRequired });
+    const { packages } = this.state;
+    if (packages) {
+      packages.forEach((item, index) => {
+        if (fromOption_packageRequired)
+          if (item.caption === fromOption_packageRequired[0])
+            this.setState({ activeSlide: index });
+      });
+    }
+  }
+  async componentDidMount() {
+    const { renter_owner, onLoad, fromBoltOn } = this.props;
+    this.setState({ pkgloading: true });
+    res = await Firebase.getPackagesData();
+    const { fromOption_packageRequired } = this.state;
+    onLoad();
+    this.setState({ pkgloading: false });
+    for (var i in res) all_packages.push(res[i]);
     let packages = [];
     for (var i in all_packages) {
       if (all_packages[i].for === 0 || all_packages[i].for === renter_owner) {
         const order = parseInt(all_packages[i].order);
-        packages[order] = all_packages[i];
-        //packages.push(all_packages[i]);
+        if (fromBoltOn) {
+          if (all_packages[i].caption !== "Membership Pack")
+            packages[order] = all_packages[i];
+        } else {
+          packages[order] = all_packages[i];
+        }
       }
     }
-    this.setState({ packages: packages });
+    let temp = [];
+    let pos = 0;
+    packages.forEach((item, index) => {
+      if (fromOption_packageRequired)
+        if (item.caption === fromOption_packageRequired[0]) pos = index;
+      temp.push(item);
+    });
+    this.setState({ packages: temp });
+    console.log("packages", temp);
+    setTimeout(() => {
+      this.setState({ activeSlide: pos });
+    }, 100);
   }
   get pagination() {
     const { activeSlide, packages } = this.state;
@@ -79,21 +110,25 @@ export default class PackCarousel extends React.Component {
   }
 
   render() {
-    const { activeSlide, packages, coming_flag } = this.state;
-
+    const { activeSlide, packages, pkgloading } = this.state;
     return (
       <View style={{ flex: 1 }}>
-        {packages.length > 0 && this.pagination}
-        <Carousel
-          ref={c => (this._slider1Ref = c)}
-          removeClippedSubviews={false}
-          data={packages}
-          renderItem={this._renderItem}
-          onSnapToItem={index => this.setState({ activeSlide: index })}
-          sliderWidth={sliderWidth}
-          itemWidth={itemWidth}
-          firstItem={SLIDER_1_FIRST_ITEM}
-        />
+        {pkgloading && (
+          <ActivityIndicator size="large" color={colors.darkblue} />
+        )}
+        {!pkgloading && packages.length > 0 && this.pagination}
+        {!pkgloading && (
+          <Carousel
+            ref={c => (this._slider1Ref = c)}
+            removeClippedSubviews={false}
+            data={packages}
+            renderItem={this._renderItem}
+            onSnapToItem={index => this.setState({ activeSlide: index })}
+            sliderWidth={sliderWidth}
+            itemWidth={itemWidth}
+            firstItem={activeSlide}
+          />
+        )}
       </View>
     );
   }

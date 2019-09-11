@@ -14,6 +14,7 @@ import {
 import { connect } from "react-redux";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
+import TopImage from "../../components/TopImage";
 import Firebase from "../../firebasehelper";
 import CodeInput from "react-native-confirmation-code-input";
 import {
@@ -156,6 +157,7 @@ class PhoneCode extends React.Component {
             <ActivityIndicator size="large" color={colors.yellow} />
           </View>
         )}
+        <TopImage />
         <Logo />
 
         <TextInput
@@ -176,7 +178,7 @@ class PhoneCode extends React.Component {
           <Text
             style={{
               fontSize: 25,
-              fontFamily: "Quicksand",
+              fontFamily: "Gothic A1",
               fontWeight: "400"
             }}
           >
@@ -193,7 +195,7 @@ class PhoneCode extends React.Component {
           <Text
             style={{
               fontSize: 25,
-              fontFamily: "Quicksand",
+              fontFamily: "Gothic A1",
               fontWeight: "400",
               color: colors.blue
             }}

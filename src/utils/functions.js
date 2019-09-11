@@ -72,6 +72,14 @@ export function removeItemfromArray(array, item) {
   }
   return array;
 }
+export function removeItemfromArrayByKey(array, key) {
+  for (var i = 0; i < array.length; i++) {
+    if (Object.keys(array[i])[0] === key) {
+      array.splice(i, 1);
+    }
+  }
+  return array;
+}
 export function isJsonOk(text) {
   if (
     /^[\],:{}\s]*$/.test(

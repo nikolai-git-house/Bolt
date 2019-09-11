@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import {
+  Platform,
   StyleSheet,
-  Text,
   TextInput,
   View,
   ScrollView,
@@ -9,13 +9,17 @@ import {
   TouchableOpacity,
   DeviceEventEmitter,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage,
+  Text
 } from "react-native";
 import Spinner from "react-native-loading-spinner-overlay";
 import { connect } from "react-redux";
+import Sound from "react-native-sound";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
+import TopImage from "../../components/TopImage";
 import { Metrics } from "../../theme";
 import MessageItem from "../../components/MessageItem";
 import MessageInput from "../../components/MessageInput";
@@ -24,11 +28,15 @@ import Firebase from "../../firebasehelper";
 import { buildBotMessages } from "./botMessages";
 import { saveOnboarding } from "../../Redux/actions/index";
 import Choice from "../../components/Choice";
-import { getTicketNumber } from "../../utils/functions";
+import RecommendPackage from "./RecommendPackage";
+import PackCarousel from "../../components/PackCarousel";
+import Subscription from "../../components/Subscription";
 const TAB_HEIGHT = 50;
 let items = [];
 let rooms = [];
 let adjectives = [];
+let packagesBought = [];
+
 Firebase.getAllItem(res => {
   items = res.map(item => item.toLowerCase());
 });
@@ -42,10 +50,19 @@ Firebase.getAllAdjective(res => {
     return { id: index, name: item };
   });
 });
+
+function arraytoString(array) {
+  let str = "";
+  array.forEach(item => {
+    str += " " + item;
+  });
+  return str;
+}
 class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      renter_owner: props.basic.renter_owner === "Renter" ? 1 : 2,
       keyboard: "invisible",
       keyboard_Height: 0,
       message_txt: "",
@@ -59,7 +76,10 @@ class Main extends React.Component {
       password: "",
       choiceselected: false,
       goinglivechat: false,
-      waiting_reply: false
+      waiting_reply: false,
+      issue_opened: false,
+      show_package: false,
+      pkgs: []
     };
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
@@ -80,14 +100,45 @@ class Main extends React.Component {
     this.keyboardDidHideListener.remove();
     console.log("unmount Main");
   }
+  componentWillReceiveProps(nextProps) {
+    console.log("pkgs", this.props.basic.packages);
+    if (this.props.basic.packages) {
+      let promises = this.props.basic.packages.map(item => {
+        return Firebase.getPackageInfo(item.caption).then(res => {
+          return res;
+        });
+      });
+      Promise.all(promises).then(res => {
+        console.log("pkgs", res);
+        this.setState({ pkgs: res });
+      });
+    } else {
+      this.setState({ pkgs: [] });
+    }
+  }
   componentDidMount() {
     this.props.navigation.addListener("willFocus", this.restart);
+    console.log("pkgs", this.props.basic.packages);
+    if (this.props.basic.packages) {
+      let promises = this.props.basic.packages.map(item => {
+        return Firebase.getPackageInfo(item.caption).then(res => {
+          return res;
+        });
+      });
+      Promise.all(promises).then(res => {
+        console.log("pkgs", res);
+        this.setState({ pkgs: res });
+      });
+    } else {
+      this.setState({ pkgs: [] });
+    }
   }
-  restart = () => {
+  restart = async () => {
     this.setState({
       messages: [],
       choiceselected: false,
-      goinglivechat: false
+      goinglivechat: false,
+      packagesBought: []
     });
     let profile = this.props.basic;
     let uid = this.props.uid;
@@ -110,6 +161,8 @@ class Main extends React.Component {
         this.GoLiveChat();
       }
     });
+    let pkgs = await Firebase.getPackagesBoughtByUserID(uid);
+    this.setState({ packagesBought: pkgs });
   };
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
@@ -122,6 +175,8 @@ class Main extends React.Component {
     Firebase.activate(uid, email, password)
       .then(res => {
         this.props.dispatch(saveOnboarding(res));
+        AsyncStorage.setItem("profile", JSON.stringify(res));
+        AsyncStorage.setItem("uid", uid);
         console.log("activate result", res);
       })
       .catch(err => {
@@ -201,6 +256,26 @@ class Main extends React.Component {
     });
     this.startAIBot();
   };
+  showErrorComment = (ticket, pkgName) => {
+    const { duration } = this.state;
+    let _this = this;
+    setTimeout(() => {
+      _this.addMessage({
+        type: "bot",
+        text: `In order for me to help you with ${ticket} you must buy ${pkgName} in explore.`
+      });
+    }, duration);
+    setTimeout(() => {
+      _this.addMessage({
+        type: "bot",
+        isUserNext: true,
+        isRecommend: true
+      });
+    }, 2 * duration);
+    setTimeout(() => {
+      _this.refs.scrollView.scrollToEnd();
+    }, 2 * duration + 100);
+  };
   startAIBot = () => {
     const { duration } = this.state;
     let _this = this;
@@ -212,7 +287,7 @@ class Main extends React.Component {
       _this.setState({ isfinalQuestion: true });
     }, duration);
     setTimeout(() => {
-      _this.setState({ isUserTurn: true });
+      _this.setState({ isUserTurn: true, issue_opened: true });
     }, duration + 2000);
     setTimeout(() => {
       _this.refs.scrollView.scrollToEnd();
@@ -222,7 +297,6 @@ class Main extends React.Component {
     const { botMessages, duration } = this.state;
     let _this = this;
     botMessages.some((item, index) => {
-      this.setState({ startpoint: index });
       setTimeout(() => {
         _this.addMessage(item);
         _this.refs.scrollView.scrollToEnd();
@@ -232,8 +306,7 @@ class Main extends React.Component {
         setTimeout(() => {
           if (!item.isChoice) _this.setState({ isUserTurn: true });
           botMessages.splice(0, index + 1);
-          newbotMessages = botMessages;
-          _this.setState({ botMessages: newbotMessages });
+          _this.setState({ botMessages });
         }, (index + 1) * duration);
       }
       if (item.isFinish) {
@@ -241,6 +314,96 @@ class Main extends React.Component {
       }
       return item.isUserNext;
     });
+  };
+  createBugReport = bug => {
+    let ticket_id = 31;
+    let issue = bug;
+    let ticket = {
+      id: ticket_id,
+      issue: issue,
+      status: "Waiting",
+      title: "App Bugs"
+    };
+    this.requestChat(ticket);
+  };
+  talktoHuman = () => {
+    const { duration } = this.state;
+    const { uid, basic } = this.props;
+    const { firstname, lastname } = basic;
+    let self = this;
+    let ticket_id = 30;
+    let issue = "Talk to human";
+    let ticket = {
+      id: ticket_id,
+      issue: "Talk to human",
+      status: "Waiting",
+      title: "Talk to human"
+    };
+
+    let fullname = firstname + " " + lastname;
+    setTimeout(() => {
+      self.setState({ waiting_reply: true });
+    }, 200);
+    setTimeout(() => {
+      self.refs.scrollView.scrollToEnd();
+    }, 300);
+
+    Firebase.requestChat(uid, fullname, ticket);
+  };
+  onChooseSubPackages = () => {
+    let self = this;
+    const { duration } = this.state;
+    setTimeout(() => {
+      self.addMessage({
+        type: "bot",
+        text: `Sure, here's our bolt packages, scroll through...`
+      });
+    }, duration);
+    setTimeout(() => {
+      self.refs.scrollView.scrollToEnd();
+    }, duration + 100);
+    setTimeout(() => {
+      self.setState({ show_package: true });
+    }, duration + 1500);
+  };
+  onChooseMySubscriptions = () => {
+    let self = this;
+    const { duration, pkgs } = this.state;
+    if (pkgs.length > 0) {
+      setTimeout(() => {
+        self.addMessage({
+          type: "bot",
+          text: `Here's your subscriptions. Access more info below...`
+        });
+      }, duration);
+      setTimeout(() => {
+        self.refs.scrollView.scrollToEnd();
+      }, duration + 100);
+      setTimeout(() => {
+        self.setState({ show_subscriptions: true });
+      }, duration + 1500);
+      setTimeout(() => {
+        self.refs.scrollView.scrollToEnd();
+      }, duration + 1600);
+    } else {
+      setTimeout(() => {
+        self.addMessage({
+          type: "bot",
+          text: `Sorry, you have subscribed nothing.`
+        });
+      }, duration);
+      setTimeout(() => {
+        self.refs.scrollView.scrollToEnd();
+      }, duration + 100);
+      setTimeout(() => {
+        self.addMessage({
+          type: "bot",
+          isUserNext: true,
+          isChoice: true,
+          choiceselected: false
+        });
+      }, 2 * duration);
+    }
   };
   createTicket = choice => {
     let ticket_id = choice.id;
@@ -255,43 +418,120 @@ class Main extends React.Component {
   };
   requestChat = ticket => {
     let self = this;
+    const { duration } = this.state;
     const { uid, basic } = this.props;
     const { firstname, lastname } = basic;
     let fullname = firstname + " " + lastname;
     setTimeout(() => {
-      self.setState({ waiting_reply: true });
-    }, 2000);
+      self.addMessage({
+        type: "bot",
+        text: `Thanks, ${firstname}, one of our agent will be in touch shortly.`
+      });
+    }, duration);
     setTimeout(() => {
       self.refs.scrollView.scrollToEnd();
-    }, 2100);
+    }, duration + 100);
+    setTimeout(() => {
+      self.addMessage({
+        type: "bot",
+        text: `Is there anything else I can help with today ${firstname}?`
+      });
+    }, 2 * duration);
+    setTimeout(() => {
+      self.refs.scrollView.scrollToEnd();
+    }, 2 * duration + 100);
+    setTimeout(() => {
+      self.addMessage({
+        type: "bot",
+        isUserNext: true,
+        isChoice: true,
+        choiceselected: false
+      });
+    }, 3 * duration);
     Firebase.requestChat(uid, fullname, ticket);
   };
   _keyboardDidShow(e) {
+    const { issue_opened } = this.state;
     this.setState({ keyboard: "visible" });
-
     let keyboard_Height = e.endCoordinates.height;
     this.setState({ keyboard_Height });
     let self = this;
+    console.log("issue_opened", issue_opened);
     setTimeout(() => {
-      self.moveScroll();
+      self.moveScroll(80);
+      if (issue_opened) self.moveScroll(80);
+      else self.refs.scrollView.scrollToEnd();
     }, 100);
   }
-  selectedChoice = choice => {
+  selectedChoice = async choice => {
+    console.log("choice", choice);
     let self = this;
-    const { duration } = this.state;
+    const { duration, packagesBought } = this.state;
+    let packageRequired = await Firebase.getPackNamesByTicketID(choice.id);
     Keyboard.dismiss();
+
     this.setState({ keyboard: "invisible", choiceselected: true });
-    this.addMessage({
-      type: "user",
-      text: `I'd like your help with ${choice.title} please bolt?`
-    });
-    setTimeout(() => {
-      self.refs.scrollView.scrollToEnd();
-    }, 100);
+    if (choice.id != 30 && choice.id != 31) {
+      this.addMessage({
+        type: "user",
+        text: `I'd like your help with ${choice.title} please bolt?`
+      });
+      setTimeout(() => {
+        self.refs.scrollView.scrollToEnd();
+      }, 100);
+    }
     if (choice.id === 1) {
       this.startAIBot();
+    } else if (choice.id === 15) {
+      this.onChooseSubPackages();
+      //this.createTicket(choice);
+    } else if (choice.id === 16) {
+      this.onChooseMySubscriptions();
+    } else if (choice.id === 21) {
+    } else if (choice.id === 30) {
+      this.talktoHuman();
+    } else if (choice.id === 31) {
+      this.setState({ info: "bug" });
+      this.setState({ isUserTurn: true });
+      setTimeout(() => {
+        self.refs.scrollView.scrollToEnd();
+      }, 100);
+      //app bug
     } else {
-      this.createTicket(choice);
+      console.log("packageBought", packagesBought);
+      console.log("packageRequired", packageRequired);
+      this.setState({ packageRequired });
+      let pkgNames = arraytoString(packageRequired);
+      if (packageRequired.length > 0) {
+        if (packagesBought) {
+          if (
+            !packageRequired.every(elem => packagesBought.indexOf(elem) > -1)
+          ) {
+            this.showErrorComment(choice.title, pkgNames);
+          } else this.createTicket({ id: 15, title: "Subscription Package" });
+        } else {
+          this.showErrorComment(choice.title, pkgNames);
+        }
+      } else this.createTicket({ id: choice.id, title: choice.title });
+    }
+  };
+  selectRecommend = option => {
+    const { uid } = this.props;
+    const { duration, packageRequired } = this.state;
+
+    if (option === "explore") {
+      console.log("packageRequired", packageRequired);
+      this.navigateTo("MainList", {
+        ongoBack: () => console.log("Will go back from nextComponent"),
+        packageRequired: packageRequired
+      });
+    } else {
+      this.addMessage({
+        type: "bot",
+        isUserNext: true,
+        isChoice: true,
+        choiceselected: false
+      });
     }
   };
   _keyboardDidHide() {
@@ -304,6 +544,8 @@ class Main extends React.Component {
     return messages.map((message, i) => {
       if (message.isChoice) {
         return <Choice on_selectChoice={this.selectedChoice} />;
+      } else if (message.isRecommend) {
+        return <RecommendPackage on_selectRecommend={this.selectRecommend} />;
       } else
         return (
           <MessageItem message={message} key={i} avatar_url={avatar_url} />
@@ -318,8 +560,10 @@ class Main extends React.Component {
     this.setState({ messages: temp }, () => {
       console.log("added Message");
       setTimeout(() => {
-        if (message.isChoice) this.moveScroll();
-        else _this.refs.scrollView.scrollToEnd();
+        if (message.isChoice) {
+          if (messages.length === 2) this.moveScroll(100);
+          else this.moveScroll(500);
+        } else _this.refs.scrollView.scrollToEnd();
       }, 100);
     });
   };
@@ -327,15 +571,16 @@ class Main extends React.Component {
     const { message_txt, messages, info, isfinalQuestion } = this.state;
     let self = this;
     Keyboard.dismiss();
-    this.setState({ keyboard: "invisible" });
-    this.setState({ [info]: message_txt });
+    this.setState({ keyboard: "invisible", [info]: message_txt });
     this.addMessage({ type: "user", text: message_txt });
-
     setTimeout(() => {
+      self.setState({ message_txt: "" });
       self.refs.scrollView.scrollToEnd();
     }, 100);
     this.setState({ isUserTurn: false });
-    setTimeout(() => this.StartBot(), 1000);
+    if (info === "bug") {
+      this.createBugReport(message_txt);
+    } else setTimeout(() => this.StartBot(), 1000);
   };
   onChangeMessage = text => {
     this.setState({ message_txt: text });
@@ -358,7 +603,7 @@ class Main extends React.Component {
       } else {
         console.log("findanswer result", res);
         self.AnalyzeText(res, room);
-        self.setState({ isfinalQuestion: false });
+        self.setState({ isfinalQuestion: false, issue_opened: false });
       }
     });
   };
@@ -377,9 +622,6 @@ class Main extends React.Component {
     setTimeout(() => {
       this.setState({ keyboard: "visible" });
     }, 200);
-    // setTimeout(() => {
-    //   _this.moveScroll();
-    // }, 300);
   };
   onCloseIssue = () => {
     let _this = this;
@@ -389,12 +631,17 @@ class Main extends React.Component {
       _this.refs.scrollView.scrollToEnd();
     }, 100);
   };
+  onExplorePackage = () => {
+    this.navigateTo("MainList", {
+      ongoBack: () => console.log("Will go back from nextComponent")
+    });
+    this.setState({ show_package: false });
+  };
   handleScroll = e => {
     this.setState({ scrollY: e.nativeEvent.contentOffset.y });
   };
-  moveScroll = () => {
-    console.log("scrollY", this.state.scrollY);
-    this.refs.scrollView.scrollTo({ y: this.state.scrollY + 20 });
+  moveScroll = offset => {
+    this.refs.scrollView.scrollTo({ y: this.state.scrollY + offset });
   };
   moveIssueScroll = () => {
     console.log("scrollY", this.state.scrollY);
@@ -406,7 +653,11 @@ class Main extends React.Component {
       message_txt,
       isUserTurn,
       isfinalQuestion,
-      waiting_reply
+      waiting_reply,
+      show_package,
+      renter_owner,
+      show_subscriptions,
+      pkgs
     } = this.state;
 
     return (
@@ -421,21 +672,25 @@ class Main extends React.Component {
             marginTop: -29
           }}
         >
+          <TopImage />
           <Logo />
         </View>
         <ScrollView
           ref="scrollView"
-          style={{ marginTop: 80 }}
+          style={{ marginTop: 80, paddingLeft: 16 }}
           contentContainerStyle={{
             width: "100%",
             paddingBottom: 50,
-            minHeight: Metrics.screenHeight - 120
+            minHeight:
+              Metrics.screenHeight > 750
+                ? Metrics.screenHeight - 100
+                : Metrics.screenHeight - 120
           }}
           keyboardShouldPersistTaps={"handled"}
           onScroll={this.handleScroll}
           scrollEventThrottle={16}
         >
-          <View style={{ height: 20 }} />
+          <View style={{ height: Metrics.screenHeight > 750 ? 80 : 50 }} />
           {this.setMessages()}
           {waiting_reply && (
             <View
@@ -479,8 +734,65 @@ class Main extends React.Component {
               onSend={this.ChooseIssue}
             />
           )}
+          {show_package && (
+            <View>
+              <PackCarousel
+                getActive={async (isgroup, price, imgName, pkgName) => {
+                  console.log(pkgName);
+                }}
+                onLoad={() => {
+                  setTimeout(() => this.refs.scrollView.scrollToEnd(), 100);
+                }}
+                renter_owner={renter_owner}
+              />
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={styles.CalltoAction}
+                  onPress={this.onExplorePackage}
+                >
+                  <Text>Explore Package</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.CalltoAction}
+                  onPress={() => {
+                    this.createTicket({
+                      id: 15,
+                      title: "Subscription Packages"
+                    });
+                    this.setState({ show_package: false });
+                  }}
+                >
+                  <Text>I'd like more help</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+          {show_subscriptions &&
+            pkgs.map((item, index) => {
+              return (
+                <Subscription
+                  price={item.price}
+                  pkgName={item.caption}
+                  key={index}
+                />
+              );
+            })}
+          {show_subscriptions && (
+            <TouchableOpacity
+              style={styles.CalltoAction}
+              onPress={() => {
+                this.createTicket({
+                  id: 16,
+                  title: "My Subscriptions"
+                });
+                this.setState({ show_subscriptions: false });
+              }}
+            >
+              <Text>I'd like more help</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
-        {this.state.keyboard == "visible" && (
+        {this.state.keyboard == "visible" && Platform.OS === "ios" && (
           <View
             style={{
               width: "100%",
@@ -503,25 +815,30 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     paddingTop: 29,
-    backgroundColor: colors.white,
-    paddingLeft: 16
+    backgroundColor: colors.white
   },
   CalltoAction: {
-    opacity: 0.8,
-    marginRight: 10,
-    backgroundColor: colors.yellow,
-    borderRadius: 30,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 10,
+    paddingRight: 10,
+    margin: 15,
+    borderRadius: 6,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    backgroundColor: colors.white,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
-    elevation: 3,
-    elevation: 3,
-    alignSelf: "flex-end"
+    elevation: 3
   },
   button: {
     color: colors.darkblue,
     fontSize: 16,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "100",
     paddingTop: 17,
     paddingBottom: 17,
@@ -545,6 +862,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F5FCFF"
+  },
+  buttonGroup: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around"
   },
   spinnerTextStyle: {
     color: "#FFF"

@@ -12,18 +12,17 @@ import { createAppContainer, createStackNavigator } from "react-navigation";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import PersonalProfile from "./Personal";
-import HomeProfile from "./Home";
 import GroupProfile from "./Group";
 import HealthProfile from "./Health";
 import PetsProfile from "./Pets";
 import TravelProfile from "./Travel";
-import RentingProfile from "./Renting";
 import SubscriptionProfile from "./Subscriptions";
 import Logo from "../../components/Logo";
-import TopImage from "../../components/TopImage";
+import TopImage from "./component/TopImage";
 import Header from "../../components/Header";
 import { Metrics } from "../../theme";
 import colors from "../../theme/Colors";
+import { saveScreen } from "../../Redux/actions";
 class Profile extends React.Component {
   constructor(props) {
     super(props);
@@ -46,6 +45,7 @@ class Profile extends React.Component {
       const { page } = navigation.state.params;
       console.log("page", page);
       this.setState({ screen: page });
+      this.props.dispatch(saveScreen(page));
     }
   };
   LogOut = () => {
@@ -55,9 +55,6 @@ class Profile extends React.Component {
     switch (screen) {
       case "Personal":
         return <PersonalProfile navigation={this.props.navigation} />;
-        break;
-      case "Home":
-        return <HomeProfile navigation={this.props.navigation} />;
         break;
       case "Groups":
         return <GroupProfile navigation={this.props.navigation} />;
@@ -74,9 +71,6 @@ class Profile extends React.Component {
       case "Travel":
         return <TravelProfile navigation={this.props.navigation} />;
         break;
-      case "Renting":
-        return <RentingProfile navigation={this.props.navigation} />;
-        break;
       default:
         return <PersonalProfile navigation={this.props.navigation} />;
     }
@@ -92,13 +86,13 @@ class Profile extends React.Component {
           backgroundColor: colors.white
         }}
       >
-        <TopImage />
+        <TopImage screen={screen} />
         <Logo />
         <Header onTap={this.onTap} />
         <View
           style={{
             flex: 1,
-            marginTop: 180,
+            marginTop: screen === "Personal" ? 250 : 180,
             width: "100%"
           }}
         >
@@ -116,7 +110,8 @@ function mapDispatchToProps(dispatch) {
 }
 function mapStateToProps(state) {
   return {
-    basic: state.basic
+    basic: state.basic,
+    screen: state.screen
   };
 }
 export default connect(

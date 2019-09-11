@@ -19,10 +19,17 @@ import {
   savePet,
   saveBike,
   saveHealth,
-  saveHome
+  saveHome,
+  savePosts,
+  saveUsers
 } from "../../Redux/actions/index";
 import { isSession } from "../../utils/functions";
-
+import Firebase from "../../firebasehelper";
+function toDateTime(secs) {
+  var t = new Date(1970, 0, 1); // Epoch
+  t.setSeconds(secs);
+  return t;
+}
 class LogoScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -44,6 +51,46 @@ class LogoScreen extends React.Component {
       toValue: 0,
       duration: 2000
     }).start(() => this.Start());
+  }
+  componentDidMount() {
+    this.unsubscribePosts = Firebase.firestore()
+      .collection("post")
+      .orderBy("timestamp", "desc")
+      .onSnapshot(snapshot => {
+        let posts = [];
+        if (snapshot.size) {
+          snapshot.forEach(doc => {
+            posts.push(doc.data());
+          });
+          console.log("posts", posts);
+          let promises = posts.map(async item => {
+            const { timestamp, uid } = item;
+            let user_data = await Firebase.getUserDatafromUID(uid);
+            item.time = toDateTime(timestamp.seconds).toLocaleString();
+            item.avatar_url = user_data.avatar_url ? user_data.avatar_url : "";
+            item.fullname = user_data.firstname + " " + user_data.lastname;
+            return item;
+          });
+          Promise.all(promises).then(res => {
+            console.log("final_posts", res);
+            this.props.dispatch(savePosts(posts));
+          });
+        }
+      });
+    this.unsubscribeUsers = Firebase.firestore()
+      .collection("user")
+      .onSnapshot(snapshot => {
+        let users = [];
+        if (snapshot.size) {
+          snapshot.forEach(doc => {
+            let user = doc.data();
+            user.id = doc.id;
+            users.push(user);
+          });
+          console.log("users", users);
+        }
+        this.props.dispatch(saveUsers(users));
+      });
   }
   Start = () => {
     isSession()
@@ -67,6 +114,10 @@ class LogoScreen extends React.Component {
   };
   componentWillMount() {
     this.fadeIn();
+  }
+  componentWillUnmount() {
+    this.unsubscribePosts();
+    this.unsubscribeUsers();
   }
   render() {
     return (

@@ -34,7 +34,7 @@ export default class CheckDiv extends React.Component {
         onIconPress={onCheck}
         checkedColor={colors.darkblue}
         uncheckedColor={colors.darkblue}
-        fontFamily="Quicksand"
+        fontFamily="Gothic A1"
         containerStyle={{
           backgroundColor: "transparent",
           borderWidth: 0,

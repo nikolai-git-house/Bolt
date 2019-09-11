@@ -38,12 +38,10 @@ export default class IssueInput extends React.Component {
     const { query, room_value, adjective } = this.state;
     console.log(query, room_value, adjective);
     const { onSend } = this.props;
-    onSend(query, room_value, adjective);
+    if (query && room_value && adjective) onSend(query, room_value, adjective);
   };
   findData(query, type) {
     const { items, adjectives } = this.state;
-    console.log("items", items);
-    console.log("adjectives", adjectives);
 
     let queried_arr = [];
     if (query === "") {
@@ -74,7 +72,6 @@ export default class IssueInput extends React.Component {
         this.setState({ adjectives: adjective_arr });
       });
     } else {
-      console.log("adjective", item);
       this.setState({ adjective: item });
     }
   };
@@ -228,7 +225,7 @@ const styles = StyleSheet.create({
   Go: {
     color: colors.darkblue,
     fontSize: 16,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "600",
     paddingTop: 17,
     paddingBottom: 17,

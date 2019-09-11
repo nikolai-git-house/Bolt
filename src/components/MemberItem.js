@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet
 } from "react-native";
+import colors from "../theme/Colors";
 
 class MemberItem extends React.Component {
   constructor(props) {
@@ -25,12 +26,21 @@ class MemberItem extends React.Component {
           flexDirection: "row",
           justifyContent: "flex-start",
           alignItems: "center",
-          marginBottom: 20
+          marginBottom: 20,
+          marginLeft: 20
         }}
       >
         {avatar != "" && (
-          <ImageBackground style={styles.imageContainer} source={avatar} />
+          <ImageBackground
+            style={styles.imageContainer}
+            source={
+              avatar === undefined
+                ? require("../assets/Groups/user.png")
+                : { uri: avatar }
+            }
+          />
         )}
+
         {avatar === "" && (
           <TouchableOpacity onPress={onAdd}>
             <ImageBackground
@@ -56,8 +66,8 @@ class MemberItem extends React.Component {
 }
 const styles = StyleSheet.create({
   imageContainer: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     borderRadius: 40,
     overflow: "hidden"
   }

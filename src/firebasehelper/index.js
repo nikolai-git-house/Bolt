@@ -1,7 +1,10 @@
-import * as firebase from "firebase";
+import firebase from "@firebase/app";
+import "@firebase/auth";
+import "@firebase/database";
+import "@firebase/firestore";
+import "@firebase/storage";
 import { Alert } from "react-native";
 import { filterArrayByKey } from "../utils/functions";
-require("firebase/firestore");
 
 const firebaseConfig = {
   apiKey: "AIzaSyBlBJtz1oV7_pWAyjrlkxdJ7ZenisHP5sk",
@@ -20,6 +23,9 @@ class Firebase {
   }
   static getStorage() {
     return firebase.storage;
+  }
+  static firestore() {
+    return firebase.firestore();
   }
   static signup = profile => {
     console.log("profile", profile);
@@ -143,7 +149,7 @@ class Firebase {
         .get()
         .then(doc => {
           if (doc.exists) {
-            if (doc.data().mandate) {
+            if (doc.data().customer_id) {
               resolve(true);
             } else resolve(false);
           } else {
@@ -172,10 +178,39 @@ class Firebase {
       .collection("user")
       .doc(`${uid}`)
       .get();
-    if (res.data().packages)
-      return res.data().packages.includes(pkgname) ? true : false;
+    if (res.data().packages) {
+      return res.data().packages.some(item => item.caption === pkgname);
+    } else return false;
+  };
+  static getPackagesBoughtByUserID = async uid => {
+    let res = await firebase
+      .firestore()
+      .collection("user")
+      .doc(`${uid}`)
+      .get();
+    if (res.data().packages) return res.data().packages;
     else return false;
   };
+  static getPackNamesByTicketID(ticket_id) {
+    let path = "categories/" + ticket_id;
+    return new Promise((resolve, reject) => {
+      firebase
+        .database()
+        .ref(path)
+        .on("value", snapshot => {
+          var res = [];
+          if (snapshot.val()) {
+            res = snapshot.val();
+            let result = [];
+            if (res.packageA !== "N/A") result.push(res.packageA);
+            if (res.packageB !== "N/A") result.push(res.packageB);
+            if (res.packageC !== "N/A") result.push(res.packageC);
+
+            resolve(result);
+          } else reject("empty packages");
+        });
+    });
+  }
   static getProfile = phonenumber => {
     console.log("phonenumber", phonenumber);
     return new Promise((resolve, reject) => {
@@ -194,7 +229,15 @@ class Firebase {
         });
     });
   };
-
+  static async getAllUsers() {
+    const snapshot = await firebase
+      .firestore()
+      .collection("user")
+      .get();
+    return snapshot.docs.map(item => {
+      return { [item.id]: item.data() };
+    });
+  }
   static activate = (uid, email, password) => {
     return new Promise((resolve, reject) => {
       firebase
@@ -344,21 +387,22 @@ class Firebase {
     });
   };
 
-  static getPackagesData(callback) {
+  static getPackagesData() {
     console.log("getPackagesData");
     let path = "packages/";
-    firebase
-      .database()
-      .ref(path)
-      .on("value", snapshot => {
-        var res = [];
+    return new Promise((resolve, reject) => {
+      firebase
+        .database()
+        .ref(path)
+        .on("value", snapshot => {
+          var res = [];
 
-        if (snapshot.val()) {
-          res = snapshot.val();
-        }
-
-        callback(res);
-      });
+          if (snapshot.val()) {
+            res = snapshot.val();
+            resolve(res);
+          } else reject("empty packages");
+        });
+    });
   }
   static getPackageInfo = pkgName => {
     let path = "packages/";
@@ -647,6 +691,28 @@ class Firebase {
       .ref(path)
       .update({ user_typing: value });
   }
+  static async addPost(post) {
+    console.log("post", post);
+
+    const timestamp = await firebase.firestore.Timestamp.fromDate(new Date());
+    console.log("timestamp", timestamp);
+    return firebase
+      .firestore()
+      .collection("post")
+      .add({
+        title: post.title,
+        content: post.content,
+        uid: post.uid,
+        timestamp: timestamp
+      });
+  }
+  static updatePost = (post_id, data) => {
+    return firebase
+      .firestore()
+      .collection("post")
+      .doc(`${post_id}`)
+      .set(data, { merge: true });
+  };
 }
 Firebase.initialize();
 export default Firebase;

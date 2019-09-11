@@ -5,11 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Bolt</string>
+	<string>Bolt Bot</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleGetInfoString</key>
-	<string/>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -19,13 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.8</string>
+	<string>3.8.4</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
-	<key>LSApplicationCategoryType</key>
-	<string/>
+	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -41,15 +37,26 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>You will use camera for profile picture uploading, sending image data in community and posting new feed.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Our application requires user phone number verification by showing phone number input. This input is initiated based on location of app. </string>
+	<string>for app localization</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Our application requires user phone number verification by showing phone number input. This input is initiated based on location of app.</string>
+	<string>for app localization</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Our application needs permission to write photos</string>
+	<string>for app user profile photo and image upload</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Andallan.otf</string>
+		<string>Caveat-Bold.ttf</string>
+		<string>Caveat-Regular.ttf</string>
+		<string>Quicksand-Bold.ttf</string>
+		<string>Quicksand-Light.ttf</string>
+		<string>Quicksand-Medium.ttf</string>
+		<string>Quicksand-Regular.ttf</string>
+		<string>Graphik-Bold.8a604ed5.otf</string>
+		<string>Graphik-Medium.4a127c95.otf</string>
+		<string>Graphik-Regular.e2a1876e.otf</string>
+		<string>Graphik-Semibold.99c54fc5.otf</string>
 		<string>AntDesign.ttf</string>
 		<string>Entypo.ttf</string>
 		<string>EvilIcons.ttf</string>
@@ -63,21 +70,20 @@
 		<string>MaterialCommunityIcons.ttf</string>
 		<string>MaterialIcons.ttf</string>
 		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
-		<string>Caveat-Bold.ttf</string>
-		<string>Caveat-Regular.ttf</string>
-		<string>Quicksand-Bold.ttf</string>
-		<string>Quicksand-Light.ttf</string>
-		<string>Quicksand-Medium.ttf</string>
-		<string>Quicksand-Regular.ttf</string>
-		<string>Graphik-Bold.8a604ed5.otf</string>
-		<string>Graphik-Medium.4a127c95.otf</string>
-		<string>Graphik-Regular.e2a1876e.otf</string>
-		<string>Graphik-Semibold.99c54fc5.otf</string>
 		<string>Roboto_medium.ttf</string>
 		<string>Roboto.ttf</string>
 		<string>rubicon-icon-font.ttf</string>
+		<string>SimpleLineIcons.ttf</string>
+		<string>Zocial.ttf</string>
+		<string>GothicA1-Black.ttf</string>
+		<string>GothicA1-Bold.ttf</string>
+		<string>GothicA1-ExtraBold.ttf</string>
+		<string>GothicA1-ExtraLight.ttf</string>
+		<string>GothicA1-Light.ttf</string>
+		<string>GothicA1-Medium.ttf</string>
+		<string>GothicA1-Regular.ttf</string>
+		<string>GothicA1-SemiBold.ttf</string>
+		<string>GothicA1-Thin.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

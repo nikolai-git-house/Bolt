@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   Go: {
     color: colors.darkblue,
     fontSize: 16,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "600",
     paddingTop: 17,
     paddingBottom: 17,

@@ -12,6 +12,7 @@ import {
 import { connect } from "react-redux";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
+import TopImage from "../../components/TopImage";
 import Firebase from "../../firebasehelper";
 import PhoneInput from "react-native-phone-input";
 import Metrics from "../../theme/Metrics";
@@ -59,8 +60,8 @@ class SignIn extends React.Component {
           backgroundColor: colors.lightgrey
         }}
       >
+        <TopImage />
         <Logo />
-
         <PhoneInput
           style={{
             marginTop: 180,
@@ -73,7 +74,7 @@ class SignIn extends React.Component {
           initialCountry="gb"
           textStyle={{
             fontSize: 25,
-            fontFamily: "Quicksand",
+            fontFamily: "Gothic A1",
             height: 30
           }}
           onChangePhoneNumber={this.EditPhoneNumber}
@@ -83,7 +84,7 @@ class SignIn extends React.Component {
           <Text
             style={{
               fontSize: 25,
-              fontFamily: "Quicksand",
+              fontFamily: "Gothic A1",
               fontWeight: "400"
             }}
           >
@@ -100,7 +101,7 @@ class SignIn extends React.Component {
           <Text
             style={{
               fontSize: 25,
-              fontFamily: "Quicksand",
+              fontFamily: "Gothic A1",
               fontWeight: "400",
               color: colors.blue
             }}

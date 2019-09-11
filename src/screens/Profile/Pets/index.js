@@ -22,6 +22,7 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Sound from "react-native-sound";
 import ImagePicker from "react-native-image-picker";
 import colors from "../../../theme/Colors";
 import CheckDiv from "../../../components/CheckDiv";
@@ -32,6 +33,15 @@ import Metrics from "../../../theme/Metrics";
 
 const ok_img = require("../../../assets/success.png");
 const error_img = require("../../../assets/popup/error.png");
+
+var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+  if (error) {
+    console.log("failed to load the sound", error);
+    return;
+  }
+});
+bamboo.setVolume(0.5);
+
 class PetsProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -111,15 +121,18 @@ class PetsProfile extends React.Component {
       });
     });
   }
-  toggleEdit = () => {
-    const { editable } = this.state;
-    if (editable) {
-      this.setState({ button_txt: "Edit Profile Information" });
-    } else {
-      this.setState({ button_txt: "Save Profile Information" });
+  isPetPackActive() {
+    const { basic } = this.props;
+    const packages = basic.packages;
+    let result = false;
+    if (packages) {
+      packages.map((item, index) => {
+        if (item.caption === "Pet Friendly Renting Pack") result = true;
+      });
     }
-    this.setState({ editable: !editable });
-  };
+    console.log("isPetPackActive", result);
+    return result;
+  }
   save = () => {
     const { uid } = this.props;
     let { petprofile, editable } = this.state;
@@ -155,68 +168,45 @@ class PetsProfile extends React.Component {
   toggleError = visible => {
     this.setState({ errorVisible: visible });
   };
-  onBolt_PetPack = () => {
-    this.setState({ petpack: "Bolt-off" });
+  navigateTo = (page, props) => {
+    this.props.navigation.navigate(page, props);
   };
-  onCheck = index => {
-    let { petprofile } = this.state;
-    let temp = petprofile.pet_profile_checked;
-    const value = petprofile.pet_profile_checked[index];
-    temp[index] = !value;
-    petprofile.pet_profile_checked = temp;
-    this.setState({ petprofile: petprofile });
+  onActivate_PetPack = () => {
+    this.navigateTo("MainList", {
+      ongoBack: () => console.log("Will go back from nextComponent"),
+      packageRequired: ["Pet Friendly Renting Pack"]
+    });
   };
-  EditInput = (property, value) => {
-    let { petprofile } = this.state;
-    petprofile[property] = value;
-    this.setState({ petprofile: petprofile });
-  };
-  checkFirst = property => {
-    let { petprofile } = this.state;
-    console.log("checkFirst petprofile", petprofile);
-    if (property === "sex") {
-      petprofile["sex"] = "Female";
-    } else {
-      petprofile[property] = "Yes";
-    }
-    this.setState({ petprofile: petprofile });
-  };
-  checkSecond = property => {
-    let { petprofile } = this.state;
-    console.log("checkSecond petprofile", petprofile);
-    if (property === "sex") {
-      petprofile["sex"] = "Male";
-    } else {
-      petprofile[property] = "No";
-    }
-    this.setState({ petprofile: petprofile });
-  };
+
   onEventHandler = data => {
     const { petprofile } = this.state;
     const { uid } = this.props;
     let temp = petprofile;
-    const obj = JSON.parse(data);
-    const key = Object.keys(obj)[0];
-    console.log("key", key);
-    console.log("value", obj[key]);
-    temp[key] = obj[key];
-    this.setState({ petprofile: temp });
-
-    console.log(obj);
-    if (obj.onboardingFinished) {
-      temp["uid"] = uid;
+    bamboo.play();
+    if (data != "bamboo") {
+      const obj = JSON.parse(data);
+      const key = Object.keys(obj)[0];
+      console.log("key", key);
+      console.log("value", obj[key]);
+      temp[key] = obj[key];
       this.setState({ petprofile: temp });
-      Firebase.pet_signup(temp)
-        .then(res => {
-          this.props.dispatch(savePet(temp));
-          AsyncStorage.setItem("petprofile", JSON.stringify(temp));
-        })
-        .catch(err => {
-          alert(err);
-        });
-      setTimeout(() => this.setState({ webview: false }), 1000);
-      console.log("petprofile", petprofile);
-    } else this.setState(obj);
+
+      console.log(obj);
+      if (obj.onboardingFinished) {
+        temp["uid"] = uid;
+        this.setState({ petprofile: temp });
+        Firebase.pet_signup(temp)
+          .then(res => {
+            this.props.dispatch(savePet(temp));
+            AsyncStorage.setItem("petprofile", JSON.stringify(temp));
+          })
+          .catch(err => {
+            alert(err);
+          });
+        setTimeout(() => this.setState({ webview: false }), 1000);
+        console.log("petprofile", petprofile);
+      } else this.setState(obj);
+    }
   };
   render() {
     const {
@@ -239,7 +229,7 @@ class PetsProfile extends React.Component {
             source={
               Platform.OS === "ios"
                 ? { uri: "./external/onboarding/index.html" }
-                : require("../../../webview/onboarding/index.html")
+                : { uri: "file:///android_asset/onboarding/index.html" }
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -248,153 +238,60 @@ class PetsProfile extends React.Component {
             mixedContentMode="always"
             thirdPartyCookiesEnabled
             allowUniversalAccessFromFileURLs
+            useWebKit={true}
           />
         )}
         {!webview && (
           <KeyboardAwareScrollView
             style={{ width: "100%", height: "100%" }}
+            contentContainerStyle={{ alignItems: "center" }}
             ref="KeyboardAwareScrollView"
             extraScrollHeight={100}
           >
+            <Text
+              style={{
+                textAlign: "center",
+                fontFamily: "Gothic A1",
+                fontSize: 20,
+                fontWeight: "700",
+                marginBottom: 0
+              }}
+            >
+              My Pet ID
+            </Text>
             <View
               style={{
                 width: "100%",
                 alignItems: "center",
-                backgroundColor: colors.white,
                 paddingBottom: 50
               }}
             >
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontFamily: "Quicksand",
-                  fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 10
-                }}
+              <TouchableOpacity
+                onPress={this.selectPhotoTapped.bind(this)}
+                style={styles.avatar}
               >
-                My Pet Profile
-              </Text>
+                <ImageBackground
+                  style={styles.imageContainer}
+                  source={ImageSource}
+                />
+              </TouchableOpacity>
               <View style={[styles.Row, { marginBottom: 20 }]}>
-                <TouchableOpacity
-                  onPress={this.selectPhotoTapped.bind(this)}
-                  style={styles.avatar}
-                >
-                  <ImageBackground
-                    style={styles.imageContainer}
-                    source={ImageSource}
-                  />
-                </TouchableOpacity>
                 <View style={styles.PetsContainer}>
-                  <View style={styles.Row}>
-                    <TextInput
-                      style={styles.Title}
-                      placeholder="Name"
-                      onChangeText={txt => this.EditInput("petname", txt)}
-                      value={petprofile.pet_name}
-                      editable={editable}
-                    />
-                    {!editable && petprofile.pet_name && (
-                      <Image
-                        source={ok_img}
-                        style={{ width: 18, height: 18, marginLeft: "auto" }}
-                      />
-                    )}
-                  </View>
+                  <Text style={styles.Title}>{petprofile.pet_name}</Text>
                   <View style={styles.Row}>
                     <View style={styles.Column}>
                       <Text style={styles.subTitle}>SPECIES</Text>
-                      <View style={styles.checkedItem}>
-                        <TextInput
-                          style={{ backgroundColor: "transparent" }}
-                          placeholder="SPECIES"
-                          onChangeText={txt => this.EditInput("species", txt)}
-                          value={petprofile.species}
-                          editable={editable}
-                        />
-                        {!editable && petprofile.species && (
-                          <Image
-                            source={ok_img}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              marginLeft: "auto"
-                            }}
-                          />
-                        )}
-                      </View>
+                      <Text>{petprofile.species}</Text>
                     </View>
                     <View style={styles.Column}>
                       <Text style={styles.subTitle}>GENDER</Text>
-                      <View style={styles.checkedItem}>
-                        <Text>{petprofile.pet_gender}</Text>
-                        {!editable && petprofile.pet_gender && (
-                          <Image
-                            source={ok_img}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              marginLeft: "auto"
-                            }}
-                          />
-                        )}
-                      </View>
+                      <Text>{petprofile.pet_gender}</Text>
                     </View>
                   </View>
                   <View style={styles.Row}>
                     <View style={styles.Column}>
                       <Text style={styles.subTitle}>AGE</Text>
-                      <View
-                        style={{
-                          display: "flex",
-                          flexDirection: "row",
-                          justifyContent: "center",
-                          alignItems: "center"
-                        }}
-                      >
-                        {editable && (
-                          <TextInput
-                            style={{
-                              borderBottomColor: colors.darkblue,
-                              borderBottomWidth: 1,
-                              width: 19
-                            }}
-                            keyboardType="numeric"
-                            onChangeText={txt => this.EditInput("years", txt)}
-                            value={petprofile.years}
-                            editable={editable}
-                          />
-                        )}
-                        {editable && <Text>years</Text>}
-                        {editable && (
-                          <TextInput
-                            style={{
-                              borderBottomColor: colors.darkblue,
-                              borderBottomWidth: 1,
-                              width: 19,
-                              marginLeft: 5
-                            }}
-                            keyboardType="numeric"
-                            onChangeText={txt => this.EditInput("months", txt)}
-                            value={petprofile.months}
-                            editable={editable}
-                          />
-                        )}
-                        {editable && <Text>months</Text>}
-                        {!editable && (
-                          <View style={styles.checkedItem}>
-                            <Text>{petprofile.pet_age}</Text>
-                            <Image
-                              source={ok_img}
-                              style={{
-                                width: 18,
-                                height: 18,
-                                marginLeft: "auto"
-                              }}
-                            />
-                          </View>
-                        )}
-                      </View>
+                      <Text>{petprofile.pet_age}</Text>
                     </View>
                   </View>
                 </View>
@@ -407,7 +304,6 @@ class PetsProfile extends React.Component {
                   alignItems: "center",
                   justifyContent: "center",
                   padding: 10,
-                  marginTop: 20,
                   marginBottom: 10,
                   backgroundColor: colors.white
                 }}
@@ -443,222 +339,45 @@ class PetsProfile extends React.Component {
                     <Text style={{ fontSize: 16 }}>Pet Pack</Text>
                   </View>
                   <TouchableOpacity
-                    style={petpack == "Bolt-on" ? styles.CtoA : styles.CtoA_Clk}
-                    onPress={this.onBolt_PetPack}
+                    style={
+                      !this.isPetPackActive() ? styles.CtoA : styles.CtoA_Clk
+                    }
+                    onPress={this.onActivate_PetPack}
+                    disabled={this.isPetPackActive()}
                   >
                     <Text style={{ fontSize: 14, color: colors.darkblue }}>
-                      Bolt-on
+                      Activate
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <Text style={styles.Title}>Tell us about your pet</Text>
 
-              {editable && <Text style={styles.Title}>Gender</Text>}
-              {editable && (
-                <Twocheckbox
-                  title1="Female"
-                  title2="Male"
-                  value={petprofile.sex}
-                  onCheckFirst={() => this.checkFirst("sex")}
-                  onCheckSecond={() => this.checkSecond("sex")}
-                />
-              )}
               <View style={styles.inputGroup}>
                 <Text style={styles.subTitle}>FAVOURITE FOOD TREAT</Text>
-                <View
-                  style={[
-                    styles.checkedItem,
-                    {
-                      justifyContent: "space-between",
-                      width: "100%"
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("fav_food", txt)}
-                    value={petprofile.pet_favourite_food}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.pet_favourite_food && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
+                <Text style={styles.input}>
+                  {petprofile.pet_favourite_food}
+                </Text>
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.subTitle}>SPECIAL FOOD REQUIREMENT</Text>
-                <View
-                  style={[
-                    styles.checkedItem,
-                    {
-                      justifyContent: "space-between",
-                      width: "100%"
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("special_food", txt)}
-                    value={petprofile.pet_special_food}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.pet_special_food && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
+
+                <Text style={styles.input}>{petprofile.pet_special_food}</Text>
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.subTitle}>FAVOURITE TOY</Text>
-
-                <View
-                  style={[
-                    styles.checkedItem,
-                    {
-                      justifyContent: "space-between",
-                      width: "100%"
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("toy", txt)}
-                    value={petprofile.pet_toy}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.pet_toy && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
+                <Text style={styles.input}>{petprofile.pet_toy}</Text>
               </View>
-
-              {/* <View style={styles.inputGroup}>
-                <Text style={styles.subTitle}>IF YES, PILL OR INJECTION?</Text>
-                <View style={[styles.checkedItem, { width: "100%" }]}>
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("pill", txt)}
-                    value={petprofile.pill}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.pill && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
-              </View> */}
               <Text style={styles.Title}>Emergency Contact</Text>
               <View style={styles.inputGroup}>
                 <Text style={styles.subTitle}>CONTACT FULL NAME</Text>
-                <View
-                  style={[
-                    styles.checkedItem,
-                    {
-                      justifyContent: "space-between",
-                      width: "100%"
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("contact_name", txt)}
-                    value={petprofile.vet_name}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.vet_name && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
+                <Text style={styles.input}>{petprofile.vet_name}</Text>
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.subTitle}>CONTACT NUMBER</Text>
-                <View
-                  style={[
-                    styles.checkedItem,
-                    {
-                      justifyContent: "space-between",
-                      width: "100%"
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.input}
-                    onChangeText={txt => this.EditInput("contact_number", txt)}
-                    value={petprofile.phone}
-                    editable={editable}
-                  />
-                  {!editable && petprofile.phone && (
-                    <Image
-                      source={ok_img}
-                      style={{ width: 18, height: 18, marginLeft: "auto" }}
-                    />
-                  )}
-                </View>
+                <Text style={styles.input}>+44{petprofile.vet_phone}</Text>
               </View>
-
-              {!saving && (
-                <TouchableOpacity style={styles.CallAction} onPress={this.save}>
-                  <Text style={{ color: colors.yellow, fontSize: 15 }}>
-                    {button_txt}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {saving && (
-                <ActivityIndicator size="large" color={colors.darkblue} />
-              )}
             </View>
-
-            <Modal
-              animationType={"fade"}
-              transparent={true}
-              visible={this.state.errorVisible}
-              onRequestClose={() => {}}
-            >
-              <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
-                <TouchableWithoutFeedback
-                  style={{ flex: 1 }}
-                  onPress={() => this.toggleError(false)}
-                >
-                  <View style={{ flex: 1 }} />
-                </TouchableWithoutFeedback>
-                <View style={styles.modal}>
-                  <Image source={error_img} style={{ width: 80, height: 80 }} />
-                  <Text style={{ fontWeight: "700" }}>Error</Text>
-                  <Text style={{ textAlign: "center" }}>{error_msg}</Text>
-                  <TouchableHighlight
-                    onPress={() => {
-                      this.toggleError(false);
-                    }}
-                    style={{
-                      backgroundColor: colors.yellow,
-                      width: 100,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderColor: colors.grey,
-                      borderWidth: 1
-                    }}
-                  >
-                    <Text style={styles.text}>OK</Text>
-                  </TouchableHighlight>
-                </View>
-              </View>
-            </Modal>
           </KeyboardAwareScrollView>
         )}
       </View>
@@ -668,10 +387,11 @@ class PetsProfile extends React.Component {
 const styles = StyleSheet.create({
   Title: {
     fontSize: 20,
-    fontFamily: "Quicksand",
+    fontFamily: "Gothic A1",
     color: colors.darkblue,
     fontWeight: "700",
-    textAlign: "center"
+    textAlign: "center",
+    marginTop: 10
   },
   subTitle: { fontSize: 15, color: colors.darkblue },
   CallAction: {
@@ -711,7 +431,6 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   avatar: {
-    marginTop: 20,
     shadowOffset: { height: 1, width: 1 },
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
@@ -721,7 +440,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    width: "80%",
+    justifyContent: "space-around",
     marginTop: 10
   },
 
@@ -729,8 +449,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 10
+    justifyContent: "center"
   },
   checkedItem: {
     display: "flex",
@@ -749,7 +468,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
-    backgroundColor: colors.white
+    backgroundColor: "transparent",
+    fontFamily: "Gothic A1"
   },
   inputGroup: {
     width: "60%",
@@ -760,7 +480,6 @@ const styles = StyleSheet.create({
     margin: 10
   },
   input: {
-    height: 20,
     fontSize: 18,
     borderWidth: 0,
     paddingLeft: 5,
@@ -771,8 +490,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 80,
     overflow: "hidden",
-    marginBottom: 10,
-    marginRight: 30
+    marginBottom: 10
   },
   modal: {
     position: "absolute",

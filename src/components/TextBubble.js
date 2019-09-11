@@ -53,7 +53,9 @@ export default class TextBubble extends React.Component {
             elevation: 3
           }}
         >
-          <Text style={{ fontFamily: "Graphik", fontSize: 17, color: "#555" }}>
+          <Text
+            style={{ fontFamily: "Gothic A1", fontSize: 17, color: "#555" }}
+          >
             {message}
           </Text>
         </View>
@@ -64,7 +66,7 @@ export default class TextBubble extends React.Component {
 const Styles = StyleSheet.create({
   concierge: {
     fontSize: 20,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     fontWeight: "600",
     marginBottom: 10
   },
@@ -72,7 +74,7 @@ const Styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "600",
     color: colors.hotpink,
-    fontFamily: "Graphik",
+    fontFamily: "Gothic A1",
     marginBottom: 10
   },
   avatar: {

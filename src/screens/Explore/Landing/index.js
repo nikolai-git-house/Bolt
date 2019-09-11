@@ -12,6 +12,7 @@ import {
 import { connect } from "react-redux";
 import colors from "../../../theme/Colors";
 import Logo from "../../../components/Logo";
+import TopImage from "../../../components/TopImage";
 import PrimaryPackage from "./PrimaryPackage";
 import SecondaryPackage from "./SecondaryPackage";
 
@@ -23,13 +24,25 @@ const wallet_img = require("../../../assets/Explore/landing/Wallet.jpg");
 class Landing extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      isMember: false
+    };
+  }
+  componentDidMount() {
+    const packages = this.props.basic.packages;
+    let result = false;
+    if (packages) {
+      packages.map((item, index) => {
+        if (item.caption === "Membership Pack") result = true;
+      });
+      this.setState({ isMember: result });
+    } else this.setState({ isMember: false });
   }
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
   };
-
   render() {
+    const { isMember } = this.state;
     return (
       <View
         style={{
@@ -42,47 +55,53 @@ class Landing extends React.Component {
         <View
           style={{
             width: "100%",
-            height: 80,
+            height: 100,
             display: "flex",
             alignItems: "center",
             paddingTop: 50
           }}
         >
+          <TopImage />
           <Logo />
         </View>
         <ScrollView style={{ width: "100%", height: "90%" }}>
           <View style={{ display: "flex", flexDirection: "column" }}>
+            {!isMember && (
+              <PrimaryPackage
+                style="redeem"
+                title="Join as a member"
+                onPress={() =>
+                  this.navigateTo("Toggle", { page: "membership" })
+                }
+              />
+            )}
             <PrimaryPackage
               style="bolt"
-              title="Bolt on Packages"
-              onPress={() => this.navigateTo("Main")}
+              title="Explore Bolt-ons"
+              onPress={() => this.navigateTo("Toggle", { page: "bolt-ons" })}
             />
-            <PrimaryPackage style="redeem" title="Redeem Perks" />
-            <PrimaryPackage style="social" title="Member Socials" />
+            <PrimaryPackage style="social" title="Redeem Perks" />
             <SecondaryPackage
               title="Most Popular"
-              subTitle="Member Pack"
+              subTitle="Membership"
               img={health_img}
+              onPress={() => this.navigateTo("Toggle")}
             />
             <SecondaryPackage
-              title="Featured Pack"
+              title="Top perk"
               subTitle="Free Bike Hire"
               img={bike_img}
             />
             <SecondaryPackage
-              title="Featured Pack"
-              subTitle="Pet Package"
-              img={pet_img}
-            />
-            <SecondaryPackage
-              title="Monthly earnings"
-              subTitle="15 Tokens"
+              title="Top Bolt-On"
+              subTitle="Health Concierge"
               img={token_img}
             />
             <SecondaryPackage
-              title="Wallet Balance"
-              subTitle="Top Up"
+              title="Monthly earnings"
+              subTitle="15 tokens"
               img={wallet_img}
+              onPress={() => this.navigateTo("Wallet")}
             />
           </View>
         </ScrollView>

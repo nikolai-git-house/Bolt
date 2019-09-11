@@ -25,6 +25,7 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Sound from "react-native-sound";
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import ImagePicker from "react-native-image-picker";
 import colors from "../../../theme/Colors";
@@ -36,6 +37,14 @@ import { saveBike } from "../../../Redux/actions/index";
 const default_avatar = require("../../../assets/plus.png");
 const ok_img = require("../../../assets/success.png");
 const error_img = require("../../../assets/popup/error.png");
+
+var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+  if (error) {
+    console.log("failed to load the sound", error);
+    return;
+  }
+});
+bamboo.setVolume(0.5);
 class TravelProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -165,28 +174,31 @@ class TravelProfile extends React.Component {
     const { bikeprofile } = this.state;
     const { uid } = this.props;
     let temp = bikeprofile;
-    const obj = JSON.parse(data);
-    const key = Object.keys(obj)[0];
-    console.log("key", key);
-    console.log("value", obj[key]);
-    temp[key] = obj[key];
-    this.setState({ bikeprofile: temp });
-
-    console.log(obj);
-    if (obj.onboardingFinished) {
-      temp["uid"] = uid;
+    bamboo.play();
+    if (data != "bamboo") {
+      const obj = JSON.parse(data);
+      const key = Object.keys(obj)[0];
+      console.log("key", key);
+      console.log("value", obj[key]);
+      temp[key] = obj[key];
       this.setState({ bikeprofile: temp });
-      Firebase.bike_signup(temp)
-        .then(res => {
-          this.props.dispatch(saveBike(temp));
-          AsyncStorage.setItem("bikeprofile", JSON.stringify(temp));
-        })
-        .catch(err => {
-          alert(err);
-        });
-      setTimeout(() => this.setState({ webview: false }), 1000);
-      console.log("bikeprofile", bikeprofile);
-    } else this.setState(obj);
+
+      console.log(obj);
+      if (obj.onboardingFinished) {
+        temp["uid"] = uid;
+        this.setState({ bikeprofile: temp });
+        Firebase.bike_signup(temp)
+          .then(res => {
+            this.props.dispatch(saveBike(temp));
+            AsyncStorage.setItem("bikeprofile", JSON.stringify(temp));
+          })
+          .catch(err => {
+            alert(err);
+          });
+        setTimeout(() => this.setState({ webview: false }), 1000);
+        console.log("bikeprofile", bikeprofile);
+      } else this.setState(obj);
+    }
   };
   render() {
     const {
@@ -234,7 +246,7 @@ class TravelProfile extends React.Component {
               <Text
                 style={{
                   textAlign: "center",
-                  fontFamily: "Quicksand",
+                  fontFamily: "Gothic A1",
                   fontSize: 20,
                   fontWeight: "700",
                   marginBottom: 10
@@ -408,7 +420,7 @@ class TravelProfile extends React.Component {
 const styles = StyleSheet.create({
   Title: {
     fontSize: 20,
-    fontFamily: "Quicksand",
+    fontFamily: "Gothic A1",
     color: colors.darkblue,
     fontWeight: "700",
     textAlign: "center"
@@ -433,7 +445,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
+    fontFamily: "Gothic A1"
   },
   Column: {
     display: "flex",
