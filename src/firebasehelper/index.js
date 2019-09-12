@@ -43,11 +43,27 @@ class Firebase {
     });
   };
   static pushProfileImage = (uid, url) => {
-    firebase
-      .firestore()
-      .collection("user")
-      .doc(`${uid}`)
-      .set({ avatar_url: url }, { merge: true });
+    return new Promise((resolve, reject) => {
+      firebase
+        .firestore()
+        .collection("user")
+        .doc(`${uid}`)
+        .set({ avatar_url: url }, { merge: true })
+        .then(() => {
+          firebase
+            .firestore()
+            .collection("user")
+            .doc(`${uid}`)
+            .get()
+            .then(res => {
+              resolve(res.data());
+            })
+            .catch(err => {
+              reject(err);
+            });
+        })
+        .catch(error => reject(error));
+    });
   };
   static pet_signup = profile => {
     console.log("pet_profile", profile);
@@ -127,7 +143,7 @@ class Firebase {
         .then(doc => {
           if (doc.exists) {
             console.log("doc", doc.data());
-            if (doc.data().email) {
+            if (doc.data().active) {
               resolve(true);
             } else resolve(false);
           } else {
@@ -188,7 +204,10 @@ class Firebase {
       .collection("user")
       .doc(`${uid}`)
       .get();
-    if (res.data().packages) return res.data().packages;
+    if (res.data().packages)
+      return res.data().packages.map(item => {
+        return item.caption;
+      });
     else return false;
   };
   static getPackNamesByTicketID(ticket_id) {
@@ -238,31 +257,6 @@ class Firebase {
       return { [item.id]: item.data() };
     });
   }
-  static activate = (uid, email, password) => {
-    return new Promise((resolve, reject) => {
-      firebase
-        .firestore()
-        .collection("user")
-        .doc(`${uid}`)
-        .set({ email: email, password: password }, { merge: true })
-        .then(() => {
-          firebase
-            .firestore()
-            .collection("user")
-            .doc(`${uid}`)
-            .get()
-            .then(res => {
-              resolve(res.data());
-            })
-            .catch(err => {
-              reject(err);
-            });
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  };
   static findFriends = uid => {
     console.log("findfriends of uid", uid);
     return new Promise((resolve, reject) => {

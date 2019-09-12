@@ -167,22 +167,6 @@ class Main extends React.Component {
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
   };
-  Activate = () => {
-    const uid = this.props.uid;
-    const basic = this.props.basic;
-
-    const { email, password } = this.state;
-    Firebase.activate(uid, email, password)
-      .then(res => {
-        this.props.dispatch(saveOnboarding(res));
-        AsyncStorage.setItem("profile", JSON.stringify(res));
-        AsyncStorage.setItem("uid", uid);
-        console.log("activate result", res);
-      })
-      .catch(err => {
-        console.log("Error", err);
-      });
-  };
   AnalyzeText = (answer, room) => {
     const _this = this;
     const { duration } = this.state;
@@ -308,9 +292,6 @@ class Main extends React.Component {
           botMessages.splice(0, index + 1);
           _this.setState({ botMessages });
         }, (index + 1) * duration);
-      }
-      if (item.isFinish) {
-        this.Activate();
       }
       return item.isUserNext;
     });
@@ -504,6 +485,7 @@ class Main extends React.Component {
       let pkgNames = arraytoString(packageRequired);
       if (packageRequired.length > 0) {
         if (packagesBought) {
+          console.log("packagesBought");
           if (
             !packageRequired.every(elem => packagesBought.indexOf(elem) > -1)
           ) {

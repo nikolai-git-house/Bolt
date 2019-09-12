@@ -50,12 +50,6 @@ class PersonalProfile extends React.Component {
       activated: false,
       job: "photographer",
       ImageSource: require("../../../assets/avatar.png"),
-      statusImage: cross_img,
-      email_statusImg: cross_img,
-      password_statusImg: cross_img,
-      updating: "false",
-      account_creating: "false",
-      editable: true,
       isloggedIn: false,
       modalVisible: false,
       successVisible: false,
@@ -88,40 +82,27 @@ class PersonalProfile extends React.Component {
   };
   componentWillReceiveProps(props) {
     let basic = props.basic;
-    const { email, password } = basic;
-    if (email && password) this.setState({ activated: true });
+    const { active } = basic;
+    if (active) this.setState({ activated: true });
+    console.log("basic in receive props", basic);
     //this.setState({ isloggedIn: true });
-    this.setState({ email, password });
-    if (email) this.setState({ email_statusImg: ok_img });
-    if (password) this.setState({ password_statusImg: ok_img });
   }
   componentDidMount() {
     let _this = this;
     let basic = this.props.basic;
-    console.log("basic", basic);
+    const { active } = basic;
+    if (active) this.setState({ activated: true });
     if (!basic) {
       basic = {
         firstname: "test",
         lastname: "test",
         dob: "08/12/1994",
-        phonenumber: "+971553818380",
-        email: "test@gmail.com",
-        password: "test"
+        phonenumber: "+971553818380"
       };
     } else {
       this.setState({ isloggedIn: true });
-      const fullname =
-        basic.firstname === "" ? "" : basic.firstname + " " + basic.lastname;
-      this.setState({ fullname, fullname });
-      if (fullname !== "") this.setState({ name_statusImg: ok_img });
       this.setState({ dob: basic.dob });
-      if (basic.dob !== "") this.setState({ dob_statusImg: ok_img });
       this.setState({ phonenumber: basic.phonenumber });
-      if (basic.email) {
-        this.setState({ activated: true });
-        this.setState({ email_statusImg: ok_img });
-      }
-      if (basic.password) this.setState({ password_statusImg: ok_img });
       if (basic.avatar_url) {
         const source = { uri: basic.avatar_url };
         this.setState({ ImageSource: source });
@@ -214,6 +195,7 @@ class PersonalProfile extends React.Component {
             window.XMLHttpRequest = tempWindowXMLHttpRequest;
             Firebase.pushProfileImage(uid, url)
               .then(res => {
+                console.log("res", res);
                 this.props.dispatch(saveOnboarding(res));
                 AsyncStorage.setItem("profile", JSON.stringify(res));
               })
@@ -229,47 +211,8 @@ class PersonalProfile extends React.Component {
         console.log("error", err);
       });
   }
-  Activate = () => {
-    const { uid } = this.props;
-    const { email, password } = this.state;
-    Firebase.activate(uid, email, password)
-      .then(res => {
-        this.props.dispatch(saveOnboarding(res));
-        AsyncStorage.setItem("profile", JSON.stringify(res));
-
-        this.toggleSuccess(true);
-      })
-      .catch(err => {
-        console.log("Error", err);
-      });
-  };
   navigateTo = page => {
     this.props.navigation.navigate(page);
-  };
-  EditName = txt => {
-    if (txt != "") this.setState({ name_statusImg: ok_img });
-    else this.setState({ name_statusImg: cross_img });
-    this.setState({ fullname: txt });
-  };
-  EditEmail = txt => {
-    if (isEmailValidate(txt)) {
-      this.setState({ email_statusImg: ok_img });
-    } else this.setState({ email_statusImg: cross_img });
-    this.setState({ email: txt });
-  };
-  EditDOB = dob => {
-    if (dob != "") this.setState({ dob_statusImg: ok_img });
-    else this.setState({ dob_statusImg: cross_img });
-    this.setState({ dob: dob });
-  };
-  EditPassword = txt => {
-    if (isPasswordValidate(txt)) this.setState({ password_statusImg: ok_img });
-    else this.setState({ password_statusImg: cross_img });
-    this.setState({ password: txt });
-  };
-  EditJob = txt => {
-    this.setState({ job: txt });
-    this.setState({ updating: "true" });
   };
   startProfileTest = () => {
     this.setState({ profiletest_webview: true });
@@ -301,13 +244,7 @@ class PersonalProfile extends React.Component {
       lastname,
       dob,
       phonenumber,
-      email,
-      password,
       activated,
-      account_creating,
-      dob_statusImg,
-      email_statusImg,
-      password_statusImg,
       error_msg,
       profiletest_webview
     } = this.state;
@@ -421,7 +358,7 @@ class PersonalProfile extends React.Component {
               </View>
             </View>
 
-            <View style={styles.buttonContainer}>
+            {/* <View style={styles.buttonContainer}>
               <Image source={member_img} style={styles.img} />
               <View
                 style={{
@@ -445,7 +382,7 @@ class PersonalProfile extends React.Component {
                   Take Test
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           </KeyboardAwareScrollView>
         )}
 

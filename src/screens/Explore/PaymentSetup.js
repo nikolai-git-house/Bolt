@@ -18,7 +18,12 @@ import Logo from "../../components/Logo";
 import Sound from "react-native-sound";
 import TopImage from "../../components/TopImage";
 import colors from "../../theme/Colors";
-import { createToken, createCustomer } from "../../apis/index";
+import {
+  createToken,
+  createCustomer,
+  createPlan,
+  createSubscription
+} from "../../apis/index";
 import Firebase from "../../firebasehelper";
 import Metrics from "../../theme/Metrics";
 const error_img = require("../../assets/popup/error.png");
@@ -37,16 +42,25 @@ class PaymentSetup extends React.Component {
     this.state = {
       error: false,
       success: false,
+      subscribe: false,
       submitted: false,
       confirming: false,
+      subscribing: false,
       card_info: {},
       error_msg: "",
       webview: true
     };
   }
-
+  componentDidMount() {
+    const { price, pkgName } = this.props.navigation.state.params;
+    this.setState({ price, pkgName });
+  }
+  navigateTo = (page, props) => {
+    this.props.navigation.navigate(page, props);
+  };
   addCard = async card_info => {
     console.log("card_info", card_info);
+    const { price, pkgName } = this.state;
     const { cardNumber, expiry, cvc } = card_info;
     const { email, firstname, lastname } = this.props.basic;
     const { uid } = this.props;
@@ -60,13 +74,13 @@ class PaymentSetup extends React.Component {
     console.log("number", card_number);
     console.log("exp_month", exp_month);
     console.log("exp_year", exp_year);
-
+    this.setState({ confirming: true });
     let token_data, customer_data;
     try {
       token_data = await createToken(card_number, exp_month, exp_year, cvc);
       let token = token_data.data.id;
       console.log("token", token);
-      let description = "Cushion Charge for " + name;
+      let description = "BoltBot Charge for " + name;
       customer_data = await createCustomer(description, email, token);
       let customer_id = customer_data.data.id;
       let last4 = card_number.substring(12);
@@ -74,15 +88,62 @@ class PaymentSetup extends React.Component {
         customer_id: customer_id,
         last4: last4
       }).then(res => {
+        this.setState({ confirming: false });
         this.props.dispatch(saveOnboarding(res));
         AsyncStorage.setItem("profile", JSON.stringify(res));
-        this.toggleModal("success", true);
+        this.setState({ customer_id });
+        if (price) this.toggleModal("subscribe", true);
+        else this.toggleModal("success", true);
       });
     } catch (err) {
       console.log("err", err.toString());
-      this.setState({ error_msg: err.toString() });
+
+      this.setState({ error_msg: err.toString(), confirming: false });
       this.toggleModal("error", true);
     }
+  };
+  createSubscription = (price, pkgName, uid) => {
+    const { customer_id } = this.state;
+    return new Promise(async (resolve, reject) => {
+      let amount = 100 * price;
+      //create plan
+      let plan_data = await createPlan(amount, pkgName);
+      let plan_id = plan_data.data.id;
+      //create subscription
+      let subscription_data = await createSubscription(customer_id, plan_id);
+      let subscription_id = subscription_data.data.id;
+      resolve(subscription_id);
+    });
+  };
+  confirmPay = () => {
+    const { price, pkgName } = this.state;
+    let _this = this;
+    const { uid } = this.props;
+    this.setState({ subscribing: true });
+    this.createSubscription(price, pkgName, uid)
+      .then(res => {
+        console.log("Subscription is created!", res);
+        let temp = [];
+        Firebase.getUserDatafromUID(uid).then(res => {
+          let profile = res;
+          if (profile.packages) temp = profile.packages;
+          temp.push({ caption: pkgName, price: price });
+          profile.packages = temp;
+          profile.active = true;
+          Firebase.updateUserData(uid, profile).then(result => {
+            console.log("profile is updated!");
+            this.props.dispatch(saveOnboarding(profile));
+            AsyncStorage.setItem("profile", JSON.stringify(profile));
+            _this.setState({ subscribing: false });
+            _this.toggleModal("subscribe", false);
+            _this.navigateTo("Profile", { page: "Subscriptions" });
+          });
+        });
+      })
+      .catch(err => {
+        this.setState({ error_msg: err });
+        console.log("Error", err);
+      });
   };
   onLoadFinished = () => {
     const { firstname } = this.props.basic;
@@ -100,6 +161,7 @@ class PaymentSetup extends React.Component {
   toggleModal(type, visible) {
     if (type === "error") this.setState({ error: visible });
     if (type === "success") this.setState({ success: visible });
+    if (type === "subscribe") this.setState({ subscribe: visible });
   }
   onEventHandler = async data => {
     const { card_info } = this.state;
@@ -125,7 +187,7 @@ class PaymentSetup extends React.Component {
     this.setState({ webview: true });
   };
   render() {
-    const { submitted, confirming, webview, error_msg } = this.state;
+    const { price, confirming, webview, error_msg, subscribing } = this.state;
     return (
       <View
         style={{
@@ -171,8 +233,15 @@ class PaymentSetup extends React.Component {
                 justifyContent: "center"
               }}
             >
-              <ActivityIndicator size="large" color={colors.darkblue} />
-              <Text>Registering your card...</Text>
+              {confirming && (
+                <ActivityIndicator size="large" color={colors.darkblue} />
+              )}
+              <Text>
+                {confirming
+                  ? `Registering your card...`
+                  : `Thank you. I have successfully registered your card.
+                  Subscribing and quick buying is unlocked.`}
+              </Text>
             </View>
           )}
           <Modal
@@ -251,6 +320,83 @@ class PaymentSetup extends React.Component {
               </View>
             </View>
           </Modal>
+          <Modal
+            animationType={"fade"}
+            transparent={true}
+            visible={this.state.subscribe}
+            onRequestClose={() => {}}
+          >
+            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => this.toggleModal("subscribe", false)}
+              >
+                <View style={{ flex: 1 }} />
+              </TouchableOpacity>
+              <View style={styles.modal}>
+                <Image
+                  source={ballon_image}
+                  style={{ width: 80, height: 80 }}
+                />
+                <Text style={{ fontWeight: "700", marginBottom: 20 }}>
+                  Congratulations.
+                </Text>
+                <Text style={{ textAlign: "center" }}>
+                  Thank you. I have successfully registered your card. Do you
+                  want to subscribe to Membership package?
+                </Text>
+                <Text style={{ textAlign: "center" }}>£{price} / pcm</Text>
+                <View
+                  style={{
+                    marginTop: 20,
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-around"
+                  }}
+                >
+                  {subscribing && (
+                    <ActivityIndicator size="large" color={colors.darkblue} />
+                  )}
+                  {!subscribing && (
+                    <TouchableOpacity
+                      onPress={this.confirmPay}
+                      style={{
+                        backgroundColor: colors.yellow,
+                        width: 100,
+                        height: 30,
+                        display: "flex",
+                        alignItems: "center",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        borderColor: colors.grey,
+                        borderWidth: 1
+                      }}
+                    >
+                      <Text style={styles.text}>Subscribe</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    onPress={this.onExplore}
+                    style={{
+                      backgroundColor: colors.grey,
+                      width: 100,
+                      height: 30,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderColor: colors.grey,
+                      borderWidth: 1
+                    }}
+                  >
+                    <Text style={styles.text}>No</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
       </View>
     );
@@ -267,6 +413,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Gothic A1",
     textAlign: "center"
+  },
+  text: {
+    fontSize: 15,
+    marginBottom: 0,
+    fontFamily: "Gothic A1",
+    textAlign: "center",
+    color: colors.darkblue
   },
   cardFormWrapper: {
     padding: 10,

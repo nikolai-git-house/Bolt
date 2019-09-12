@@ -86,7 +86,7 @@ export default class PackCard extends React.Component {
             source={url}
             style={{
               width: 280,
-              height: 100,
+              height: isIPhoneX ? 120 : 100,
               marginBottom: 10
             }}
           />

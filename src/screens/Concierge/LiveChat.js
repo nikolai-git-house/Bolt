@@ -180,7 +180,7 @@ class LiveChat extends React.Component {
             <Text style={styles.button}>EndChat</Text>
           </TouchableOpacity>
         </ScrollView>
-        {this.state.keyboard == "visible" && (
+        {/* {this.state.keyboard == "visible" && (
           <View
             style={{
               width: "100%",
@@ -188,7 +188,7 @@ class LiveChat extends React.Component {
               backgroundColor: "rgba(52, 52, 52, 0.0)"
             }}
           />
-        )}
+        )} */}
       </View>
     );
   }

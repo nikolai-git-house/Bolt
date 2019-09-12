@@ -179,6 +179,7 @@ class Wallet extends React.Component {
             <TouchableOpacity
               style={styles.White_Button}
               onPress={this.openExplore}
+              disabled={basic.active}
             >
               <Text style={styles.Font}>Become {"\n"}Member</Text>
             </TouchableOpacity>

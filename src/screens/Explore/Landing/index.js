@@ -29,13 +29,10 @@ class Landing extends React.Component {
     };
   }
   componentDidMount() {
-    const packages = this.props.basic.packages;
+    const basic = this.props.basic;
     let result = false;
-    if (packages) {
-      packages.map((item, index) => {
-        if (item.caption === "Membership Pack") result = true;
-      });
-      this.setState({ isMember: result });
+    if (basic.active) {
+      this.setState({ isMember: true });
     } else this.setState({ isMember: false });
   }
   navigateTo = (page, props) => {

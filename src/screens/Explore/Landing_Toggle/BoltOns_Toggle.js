@@ -106,57 +106,49 @@ class BoltOns_Toggle extends React.Component {
     const { uid, basic } = this.props;
     const { coming_flag } = this.state;
 
-    Firebase.isActive(uid).then(res => {
-      if (res) {
-        if (!coming_flag)
-          Firebase.isPaymentReady(uid).then(async result => {
-            this.setState({ loadingdata: false });
-            if (result) {
-              let isPackageGot = await Firebase.isPackageGot(uid, pkgName);
-              console.log("isPackageGot", isPackageGot);
-
-              if (!isPackageGot)
-                this.navigateTo("Pack", {
-                  price: price,
-                  isgroup: isgroup,
-                  imgName: imgName,
-                  pkgName: pkgName
-                });
-              else {
-                this.setState({
-                  error_msg:
-                    "You have already bought this package. You can't buy same package again."
-                });
-                this.toggleError("error", true);
-              }
-            } else this.createStripe();
-          });
-        else {
-          this.toggleError("email", true);
+    if (res) {
+      if (!coming_flag)
+        Firebase.isPaymentReady(uid).then(async result => {
           this.setState({ loadingdata: false });
-          let packageName = pkgName;
-          let sender_email = basic.email;
-          const username = basic.firstname + " " + basic.lastname;
-          console.log("basic", basic);
-          let groupId = basic.groupId ? basic.groupId : "No";
-          let receiver_email = "preregister@boltlabs.co.uk";
-          this.SendMail(
-            receiver_email,
-            sender_email,
-            packageName,
-            `package/product: ${packageName}. Property/GroupID:${groupId} `,
-            username
-          );
-        }
-      } else {
-        this.setState({
-          error_msg:
-            "You are not active member. Please activate your profile to access purchase.",
-          loadingdata: false
+          if (result) {
+            let isPackageGot = await Firebase.isPackageGot(uid, pkgName);
+            console.log("isPackageGot", isPackageGot);
+
+            if (!isPackageGot)
+              this.navigateTo("Pack", {
+                price: price,
+                isgroup: isgroup,
+                imgName: imgName,
+                pkgName: pkgName
+              });
+            else {
+              this.setState({
+                error_msg:
+                  "You have already bought this package. You can't buy same package again."
+              });
+              this.toggleError("error", true);
+            }
+          } else this.createStripe();
         });
-        this.toggleError("error", true);
+      else {
+        this.toggleError("email", true);
+        this.setState({ loadingdata: false });
+        let packageName = pkgName;
+        let sender_email = basic.email;
+        const username = basic.firstname + " " + basic.lastname;
+        console.log("basic", basic);
+        let groupId = basic.groupId ? basic.groupId : "No";
+        let receiver_email = "preregister@boltlabs.co.uk";
+        this.SendMail(
+          receiver_email,
+          sender_email,
+          packageName,
+          `package/product: ${packageName}. Property/GroupID:${groupId} `,
+          username
+        );
       }
-    });
+    }
+
     //this.navigateTo("Pack", { price: price, isgroup: isgroup });
   };
   navigateTo = (page, props) => {
@@ -202,7 +194,8 @@ class BoltOns_Toggle extends React.Component {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: colors.lightgrey
+          backgroundColor: colors.lightgrey,
+          marginTop: -10
         }}
       >
         <View

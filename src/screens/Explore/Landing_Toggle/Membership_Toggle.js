@@ -40,8 +40,8 @@ class Membership_Toggle extends React.Component {
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
   };
-  createStripe = () => {
-    this.navigateTo("PaymentSetup");
+  createStripe = (price, pkgName) => {
+    this.navigateTo("PaymentSetup", { price, pkgName });
   };
   createSubscription = (price, pkgName, uid) => {
     return new Promise((resolve, reject) => {
@@ -68,6 +68,7 @@ class Membership_Toggle extends React.Component {
   };
   onPayClicked = () => {
     const { uid } = this.props;
+    const { price, pkgName } = this.state;
     this.setState({ imgUrl: membership_img });
     this.setState({
       confirm_msg: `Once you confirm, Bolt will create your monthly subscription,
@@ -81,7 +82,7 @@ class Membership_Toggle extends React.Component {
       if (result) {
         this.toggleConfirm(true);
       } else {
-        this.createStripe();
+        this.createStripe(price, pkgName);
       }
     });
   };
@@ -102,12 +103,13 @@ class Membership_Toggle extends React.Component {
           if (profile.packages) temp = profile.packages;
           temp.push({ caption: pkgName, price: price });
           profile.packages = temp;
+          profile.active = true;
           Firebase.updateUserData(uid, profile).then(result => {
             console.log("profile is updated!");
-            let new_basic = basic;
-            new_basic["packages"] = temp;
-            this.props.dispatch(saveOnboarding(new_basic));
-            AsyncStorage.setItem("profile", JSON.stringify(new_basic));
+            // let new_basic = basic;
+            // new_basic["packages"] = temp;
+            this.props.dispatch(saveOnboarding(profile));
+            AsyncStorage.setItem("profile", JSON.stringify(profile));
             this.setState({ confirming: false });
             this.toggleSuccess(true);
           });
@@ -115,7 +117,6 @@ class Membership_Toggle extends React.Component {
       })
       .catch(err => {
         this.setState({ error_msg: err, confirming: false });
-        this.toggleError(true);
         console.log("Error", err);
       });
   };
@@ -212,7 +213,9 @@ class Membership_Toggle extends React.Component {
             style={[styles.button, { marginBottom: 20 }]}
             onPress={this.onPayClicked}
           >
-            <Text style={{ fontFamily: "Gothic A1", fontSize: 18 }}>
+            <Text
+              style={{ fontFamily: "Gothic A1", fontSize: 18, marginBottom: 0 }}
+            >
               Subscribe as a member
             </Text>
           </TouchableOpacity>
@@ -338,12 +341,16 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.yellow,
     borderRadius: 10,
-    width: "100%",
+    width: "90%",
     height: 50,
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    padding: 10
+    padding: 10,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    elevation: 3
   },
   modal: {
     position: "absolute",

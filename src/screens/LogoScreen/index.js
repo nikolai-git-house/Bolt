@@ -53,30 +53,6 @@ class LogoScreen extends React.Component {
     }).start(() => this.Start());
   }
   componentDidMount() {
-    this.unsubscribePosts = Firebase.firestore()
-      .collection("post")
-      .orderBy("timestamp", "desc")
-      .onSnapshot(snapshot => {
-        let posts = [];
-        if (snapshot.size) {
-          snapshot.forEach(doc => {
-            posts.push(doc.data());
-          });
-          console.log("posts", posts);
-          let promises = posts.map(async item => {
-            const { timestamp, uid } = item;
-            let user_data = await Firebase.getUserDatafromUID(uid);
-            item.time = toDateTime(timestamp.seconds).toLocaleString();
-            item.avatar_url = user_data.avatar_url ? user_data.avatar_url : "";
-            item.fullname = user_data.firstname + " " + user_data.lastname;
-            return item;
-          });
-          Promise.all(promises).then(res => {
-            console.log("final_posts", res);
-            this.props.dispatch(savePosts(posts));
-          });
-        }
-      });
     this.unsubscribeUsers = Firebase.firestore()
       .collection("user")
       .onSnapshot(snapshot => {
@@ -116,7 +92,6 @@ class LogoScreen extends React.Component {
     this.fadeIn();
   }
   componentWillUnmount() {
-    this.unsubscribePosts();
     this.unsubscribeUsers();
   }
   render() {

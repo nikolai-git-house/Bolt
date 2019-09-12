@@ -105,8 +105,8 @@ android {
         applicationId "com.pin.boltbot"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "3.0"
+        versionCode 900120019
+        versionName "9.12.19"
         multiDexEnabled true
         
     }
