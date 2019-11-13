@@ -278,7 +278,7 @@ class Firebase {
   static getMemberList = groupId => {
     return firebase
       .firestore()
-      .collection("group")
+      .collection("property")
       .doc(`${groupId}`)
       .get()
       .then(res => {
@@ -380,7 +380,21 @@ class Firebase {
         });
     });
   };
-
+  static getCreditMembers = () => {
+    let path = "credit_members/";
+    return new Promise((resolve, reject) => {
+      firebase
+        .database()
+        .ref(path)
+        .on("value", snapshot => {
+          var res = [];
+          if (snapshot.val()) {
+            res = snapshot.val();
+          }
+          resolve(res);
+        });
+    });
+  };
   static getPackagesData() {
     console.log("getPackagesData");
     let path = "packages/";
@@ -538,6 +552,55 @@ class Firebase {
         }
       });
   }
+  static getLocationByCuisine(cuisine, callback) {
+    let path = "restaurant_foods/";
+    firebase
+      .database()
+      .ref(path)
+      .orderByChild("cuisine")
+      .equalTo(cuisine)
+      .once("value", snapshot => {
+        let res = [];
+        if (snapshot.val()) res = snapshot.val();
+        res = Object.values(res);
+        console.log("result before filter", res);
+        var a = filterArrayByKey(res, "location");
+        let result = a.map(item => item.location);
+        callback(result);
+      });
+  }
+  static getAllLocations(callback) {
+    let path = "restaurant_foods/";
+    firebase
+      .database()
+      .ref(path)
+      .once("value", snapshot => {
+        var res = [];
+
+        if (snapshot.val()) {
+          res = snapshot.val();
+        }
+        var a = filterArrayByKey(res, "location");
+        let result = a.map(item => item.location);
+        callback(result);
+      });
+  }
+  static getAllCuisines(callback) {
+    let path = "restaurant_foods/";
+    firebase
+      .database()
+      .ref(path)
+      .once("value", snapshot => {
+        var res = [];
+
+        if (snapshot.val()) {
+          res = snapshot.val();
+        }
+        var a = filterArrayByKey(res, "cuisine");
+        let result = a.map(item => item.cuisine);
+        callback(result);
+      });
+  }
   static updateUserData = (uid, data) => {
     return new Promise((resolve, reject) => {
       firebase
@@ -563,12 +626,17 @@ class Firebase {
         });
     });
   };
+  static readMessage = uid => {
+    let path = "livechat/" + uid;
+    firebase
+      .database()
+      .ref(path)
+      .update({ unread: null });
+  };
   static requestChat = (uid, username, ticket) => {
     let data = {
       uid: uid,
-      username: username,
-      established: "waiting",
-      title: ticket.title
+      username: username
     };
     let path = "livechat/" + uid;
     firebase
@@ -584,11 +652,19 @@ class Firebase {
       .set({
         ticket_id: ticket.id,
         issue: ticket.issue,
-        status: ticket.status
+        title: ticket.title,
+        status: ticket.status,
+        time: ticket.time,
+        item: ticket.item ? ticket.item : null,
+        room: ticket.room ? ticket.room : null,
+        band: ticket.band ? ticket.band : null,
+        adjective: ticket.adjective ? ticket.adjective : null,
+        response_sla: ticket.response_sla ? ticket.response_sla : null,
+        repair_sla: ticket.repair_sla ? ticket.repair_sla : null
       });
   };
-  static getAgencyRespond(uid, callback) {
-    let path = "livechat/" + uid;
+  static getAgencyRespond(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id;
     firebase
       .database()
       .ref(path)
@@ -597,14 +673,26 @@ class Firebase {
         if (snapshot.val()) {
           res = snapshot.val();
         }
-        if (res.established === "ok") {
+        if (res.status === "Open") {
           callback(true);
         } else callback(false);
       });
   }
-  static getChats(room_id, callback) {
-    console.log("getAllChat");
-    let path = "livechat/" + room_id + "/content";
+  static getAllTicketsById(user_id, callback) {
+    let path = "livechat/" + user_id + "/tickets";
+    firebase
+      .database()
+      .ref(path)
+      .on("value", snapshot => {
+        var res = [];
+        if (snapshot.val()) {
+          res = snapshot.val();
+        }
+        callback(res);
+      });
+  }
+  static getChats(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id + "/content";
     firebase
       .database()
       .ref(path)
@@ -618,8 +706,36 @@ class Firebase {
         callback(res);
       });
   }
-  static getStatus(room_id, callback) {
-    let path = "livechat/" + room_id + "/established";
+  static getTicketData(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id;
+    firebase
+      .database()
+      .ref(path)
+      .on("value", snapshot => {
+        var res = [];
+
+        if (snapshot.val()) {
+          res = snapshot.val();
+        }
+        callback(res);
+      });
+  }
+  static getChatsById(uid, callback) {
+    let path = "livechat/" + uid + "/unread";
+    firebase
+      .database()
+      .ref(path)
+      .on("value", snapshot => {
+        var res = null;
+        console.log("unread,", snapshot.val());
+        if (snapshot.val()) {
+          res = snapshot.val();
+        }
+        callback(res);
+      });
+  }
+  static getStatus(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id + "/status";
     firebase
       .database()
       .ref(path)
@@ -629,17 +745,16 @@ class Firebase {
         }
       });
   }
-  static addMessage(room_id, message, callback) {
-    console.log("writedMessage", message);
-    let path = "livechat/" + room_id + "/content";
+  static addMessage(uid, ticket_id, message, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id + "/content";
     var newChild = firebase
       .database()
       .ref(path)
       .push();
-    newChild.set(message, callback);
+    newChild.set(message, callback(true));
   }
-  static getAgencyTyping(room_id, callback) {
-    let path = "livechat/" + room_id + "/agency_typing";
+  static getAgencyTyping(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id + "/agency_typing";
     firebase
       .database()
       .ref(path)
@@ -648,38 +763,42 @@ class Firebase {
         else callback(false);
       });
   }
-  static terminateChat(room_id, callback) {
-    let path = "livechat/" + room_id;
+  static getLandlordTyping(uid, ticket_id, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id + "/landlord_typing";
     firebase
       .database()
       .ref(path)
-      .update({ established: "false", content: null })
+      .on("value", snapshot => {
+        if (snapshot.val()) callback(snapshot.val());
+        else callback(false);
+      });
+  }
+  static getContractorTyping(uid, ticket_id, callback) {
+    let path =
+      "livechat/" + uid + "/tickets/" + ticket_id + "/contractor_typing";
+    firebase
+      .database()
+      .ref(path)
+      .on("value", snapshot => {
+        if (snapshot.val()) callback(snapshot.val());
+        else callback(false);
+      });
+  }
+  static terminateChat(uid, ticket_id, feeling, callback) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id;
+    firebase
+      .database()
+      .ref(path)
+      .update({ content: null, status: "Closed", feeling: feeling })
       .then(() => {
-        var activeTickets = firebase
-          .database()
-          .ref(path + "/tickets")
-          .orderByChild("status")
-          .equalTo("Active");
-        activeTickets.once("value", snapshot => {
-          Object.keys(snapshot.val()).map(item => {
-            let subpath = "livechat/" + room_id + "/tickets/" + item;
-            console.log("subpath", subpath);
-            firebase
-              .database()
-              .ref(subpath)
-              .update({ status: "Open" })
-              .then(() => {
-                callback("success");
-              });
-          });
-        });
+        callback("success");
       })
       .catch(err => {
         callback(err);
       });
   }
-  static setTypeValue(room_id, value) {
-    let path = "livechat/" + room_id;
+  static setTypeValue(uid, ticket_id, value) {
+    let path = "livechat/" + uid + "/tickets/" + ticket_id;
     firebase
       .database()
       .ref(path)
@@ -707,6 +826,144 @@ class Firebase {
       .doc(`${post_id}`)
       .set(data, { merge: true });
   };
+  static acceptInvitation = (uid, property_id, phone) => {
+    console.log("1 uid, property_id, phone", uid, property_id, phone);
+    return new Promise((resolve, reject) => {
+      firebase
+        .firestore()
+        .collection("invitations")
+        .where("phone", "==", phone)
+        .where("property_id", "==", property_id)
+        .limit(1)
+        .get()
+        .then(res => {
+          console.log("2 invitation", res.docs[0]);
+          let invitation_id = res.docs[0].id;
+          firebase
+            .firestore()
+            .collection("invitations")
+            .doc(invitation_id)
+            .delete()
+            .then(() => {
+              //deleted Invitation;
+              console.log("3 deleted Invitation");
+              firebase
+                .firestore()
+                .collection("property")
+                .doc(property_id)
+                .get()
+                .then(res => {
+                  console.log("4 property info", res);
+                  let members = res.data().members;
+                  console.log("5 members", members);
+                  members = members.map(item => {
+                    if (item.phone === phone) {
+                      item.accepted = true;
+                      item.uid = uid;
+                    }
+                    return item;
+                  });
+                  console.log("6 members", members);
+                  firebase
+                    .firestore()
+                    .collection("property")
+                    .doc(property_id)
+                    .set({ members }, { merge: true })
+                    .then(() => {
+                      resolve(true);
+                    })
+                    .catch(err => {
+                      reject(err);
+                    });
+                })
+                .catch(err => {
+                  reject(err);
+                });
+            })
+            .catch(err => {
+              reject(err);
+            })
+            .catch(err => {
+              reject(err);
+            });
+        });
+    });
+  };
+  static rejectInvitation = (uid, property_id, phone) => {
+    console.log("1 uid, property_id, phone", uid, property_id, phone);
+    return new Promise((resolve, reject) => {
+      firebase
+        .firestore()
+        .collection("invitations")
+        .where("phone", "==", phone)
+        .where("property_id", "==", property_id)
+        .limit(1)
+        .get()
+        .then(res => {
+          console.log("2 invitation", res.docs[0]);
+          let invitation_id = res.docs[0].id;
+          firebase
+            .firestore()
+            .collection("invitations")
+            .doc(invitation_id)
+            .delete()
+            .then(() => {
+              //deleted Invitation;
+              console.log("3 deleted Invitation");
+              firebase
+                .firestore()
+                .collection("property")
+                .doc(property_id)
+                .get()
+                .then(res => {
+                  console.log("4 property info", res);
+                  let members = res.data().members;
+                  console.log("5 members", members);
+                  const index = members.findIndex(item => {
+                    return item.phone === phone;
+                  });
+                  members.splice(index, 1);
+                  console.log("6 members", members);
+                  firebase
+                    .firestore()
+                    .collection("property")
+                    .doc(property_id)
+                    .set({ members }, { merge: true })
+                    .then(() => {
+                      resolve(true);
+                    })
+                    .catch(err => {
+                      reject(err);
+                    });
+                })
+                .catch(err => {
+                  reject(err);
+                });
+            })
+            .catch(err => {
+              reject(err);
+            })
+            .catch(err => {
+              reject(err);
+            });
+        });
+    });
+  };
+  static getPropertyById(property_id) {
+    return new Promise((resolve, reject) => {
+      firebase
+        .firestore()
+        .collection("property")
+        .doc(`${property_id}`)
+        .get()
+        .then(res => {
+          resolve(res.data());
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  }
 }
 Firebase.initialize();
 export default Firebase;

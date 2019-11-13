@@ -17,13 +17,55 @@ var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
   }
 });
 bamboo.setVolume(0.5);
+
+const getImage = type => {
+  switch (type) {
+    case "agency":
+      return require("../../assets/livechat/agency_logo.png");
+    case "landlord":
+      return require("../../assets/livechat/landlord_logo.png");
+    case "contractor":
+      return require("../../assets/livechat/contractor_logo.png");
+    default:
+      return require("../../assets/livechat/agency_logo.png");
+  }
+};
+const getStyle = type => {
+  switch (type) {
+    case "user":
+      return "#f8f8f8";
+    case "agency":
+      return "#fdffd0";
+    case "landlord":
+      return "#daffda";
+    case "contractor":
+      return "#ffeaf9";
+    default:
+      return "#f8f8f8";
+  }
+};
+const getName = message => {
+  console.log("message", message);
+  switch (message.type) {
+    case "agency":
+      return "Bolt Concierge";
+    case "landlord":
+      return `${message.name} your landlord`;
+    case "contractor":
+      return `${message.name} your handyman`;
+    default:
+      return "Bolt Concierge";
+  }
+};
 class BubbleText extends React.Component {
   constructor(props) {
     super(props);
     this.animatedValue = new Animated.Value(0);
     this.loadinganimatedValue = new Animated.Value(0);
     this.state = {
-      typing: props.typing
+      agency_typing: props.agency_typing,
+      landlord_typing: props.landlord_typing,
+      contractor_typing: props.contractor_typing
     };
   }
 
@@ -33,8 +75,8 @@ class BubbleText extends React.Component {
     if (message.message && message.type === "agency") bamboo.play();
   }
   render() {
-    let { typing } = this.state;
-    const { message } = this.props;
+    let { agency_typing, landlord_typing, contractor_typing } = this.state;
+    const { message, avatar_url } = this.props;
     const animatedStyle = { transform: [{ scale: this.animatedValue }] };
     return (
       <View
@@ -47,10 +89,12 @@ class BubbleText extends React.Component {
           marginBottom: 8
         }}
       >
-        {message.type === "agency" && (
+        {(message.type === "agency" ||
+          message.type === "landlord" ||
+          message.type === "contractor") && (
           <View style={styles.avatar}>
             <Image
-              source={require("../../assets/onboarding/concierge3.png")}
+              source={getImage(message.type)}
               style={{
                 width: "100%",
                 height: "100%",
@@ -60,7 +104,7 @@ class BubbleText extends React.Component {
             />
           </View>
         )}
-        {typing && message.type === "agency" && (
+        {agency_typing && message.type === "agency" && (
           <Animatable.View
             animation="fadeInLeft"
             duration={400}
@@ -75,32 +119,99 @@ class BubbleText extends React.Component {
             />
           </Animatable.View>
         )}
-        {(!typing || message.type === "user") && (
-          <View
-            style={message.type === "user" ? styles.userbubble : styles.bubble}
+        {landlord_typing && message.type === "landlord" && (
+          <Animatable.View
+            animation="fadeInLeft"
+            duration={400}
+            style={{ flexDirection: "row" }}
           >
-            <Text
-              style={
-                message.type === "user"
-                  ? styles.userbubble_text
-                  : styles.bubble_text
-              }
+            <Image
+              source={require("../../assets/typing.gif")}
+              style={{
+                width: 63,
+                height: 50
+              }}
+            />
+          </Animatable.View>
+        )}
+        {contractor_typing && message.type === "contractor" && (
+          <Animatable.View
+            animation="fadeInLeft"
+            duration={400}
+            style={{ flexDirection: "row" }}
+          >
+            <Image
+              source={require("../../assets/typing.gif")}
+              style={{
+                width: 63,
+                height: 50
+              }}
+            />
+          </Animatable.View>
+        )}
+        {((!agency_typing && !landlord_typing && !contractor_typing) ||
+          message.type === "user") && (
+          <View
+            style={{
+              width: "auto",
+              maxWidth: "80%",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <View
+              style={[
+                message.type === "user" ? styles.userbubble : styles.bubble,
+                { backgroundColor: getStyle(message.type) }
+              ]}
             >
-              {message.message}
-            </Text>
+              <Text
+                style={
+                  message.type === "user"
+                    ? styles.userbubble_text
+                    : styles.bubble_text
+                }
+              >
+                {message.message}
+              </Text>
+            </View>
+            {message.type !== "user" && (
+              <View
+                style={{
+                  marginLeft: "auto",
+                  padding: 5,
+                  borderRadius: 5
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#555",
+                    fontSize: 10,
+                    marginBottom: 0
+                  }}
+                >
+                  {getName(message)}
+                </Text>
+              </View>
+            )}
           </View>
         )}
         {message.type === "user" && (
           <View style={styles.avatar}>
-            <Image
-              source={require("../../assets/avatar.png")}
-              style={{
-                width: "100%",
-                height: "100%",
-                flex: 1,
-                resizeMode: "contain"
-              }}
-            />
+            {!avatar_url && (
+              <Image
+                source={require("../../assets/avatar.png")}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  flex: 1,
+                  resizeMode: "contain"
+                }}
+              />
+            )}
+            {avatar_url && (
+              <Image source={{ uri: avatar_url }} style={styles.avatar} />
+            )}
           </View>
         )}
       </View>
@@ -111,11 +222,8 @@ export default BubbleText;
 const styles = StyleSheet.create({
   bubble: {
     alignSelf: "flex-start",
-    maxWidth: "80%",
-    padding: 16,
-    marginRight: 10,
-    borderRadius: 14,
-    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
@@ -126,15 +234,14 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     lineHeight: 20,
     color: "#555",
-    fontSize: 16
+    fontSize: 16,
+    marginBottom: 0
   },
   userbubble: {
     alignSelf: "flex-start",
-    maxWidth: "80%",
-    padding: 16,
+    padding: 10,
     marginRight: 0,
-    borderRadius: 14,
-    backgroundColor: colors.yellow,
+    borderRadius: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
@@ -145,7 +252,8 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     lineHeight: 20,
     color: colors.darkblue,
-    fontSize: 17
+    fontSize: 17,
+    marginBottom: 0
   },
   avatar: {
     width: 40,

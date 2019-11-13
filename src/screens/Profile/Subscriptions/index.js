@@ -45,7 +45,7 @@ class SubscriptionProfile extends React.Component {
     console.log("this.props", this.props);
     console.log("basic in Subscriptions", this.props.basic);
     this.setState({
-      webview: this.props.basic.customer_id ? false : true
+      webview: this.props.basic.active ? false : true
     });
     if (this.props.basic.packages) {
       this.setState({ pkgs: this.props.basic.packages });
@@ -68,14 +68,14 @@ class SubscriptionProfile extends React.Component {
   addCard = async card_info => {
     console.log("card_info", card_info);
     const { cardNumber, expiry, cvc } = card_info;
-    const { email, firstname, lastname } = this.props.basic;
+    const { email, firstname } = this.props.basic;
     const { uid } = this.props;
     let card_number = cardNumber.replace(/\s/g, "");
     let card_exp = expiry.replace(/\s/g, "");
     let month_year = card_exp.split("/");
     let exp_month = month_year[0];
     let exp_year = "20" + month_year[1];
-    let name = firstname + " " + lastname;
+    let name = firstname;
 
     console.log("number", card_number);
     console.log("exp_month", exp_month);
@@ -148,7 +148,7 @@ class SubscriptionProfile extends React.Component {
   render() {
     const { pkgs, error_msg, webview } = this.state;
     const { basic } = this.props;
-    const last4 = basic.last4;
+    const { last4, customer_id } = basic;
     return (
       <View style={styles.maincontainer}>
         {webview && (
@@ -192,14 +192,23 @@ class SubscriptionProfile extends React.Component {
             >
               My Subscriptions.
             </Text>
-            <View style={styles.Section}>
-              <Image
-                source={require(`../../../assets/activated.png`)}
-                style={{ width: 30, height: 30, marginRight: 10 }}
-              />
-              <Text>**** **** **** {last4}</Text>
-            </View>
-
+            {customer_id && (
+              <View style={styles.Section}>
+                <Image
+                  source={require(`../../../assets/activated.png`)}
+                  style={{ width: 30, height: 30, marginRight: 10 }}
+                />
+                <Text>**** **** **** {last4}</Text>
+              </View>
+            )}
+            {!customer_id && (
+              <View style={styles.Section}>
+                <Image
+                  source={require(`../../../assets/nonactivated.png`)}
+                  style={{ width: 30, height: 30, marginRight: 10 }}
+                />
+              </View>
+            )}
             <View>
               <Text style={{ textAlign: "center", marginBottom: 50 }}>
                 All subscriptions are debited on the day of the month which you

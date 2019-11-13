@@ -49,7 +49,6 @@ class PhoneCode extends React.Component {
     if (code === pin || phone === "+44528834523") {
       const basicInfo = {
         firstname: "",
-        lastname: "",
         dob: "",
         phonenumber: phone,
         email: "",
@@ -179,7 +178,8 @@ class PhoneCode extends React.Component {
             style={{
               fontSize: 25,
               fontFamily: "Gothic A1",
-              fontWeight: "400"
+              fontWeight: "400",
+              marginBottom: 0
             }}
           >
             Confirm

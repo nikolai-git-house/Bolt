@@ -45,8 +45,8 @@ export default class IconMenu extends React.Component {
           <Image
             source={img}
             style={{
-              width: 50,
-              height: 50,
+              width: 46,
+              height: 46,
               marginBottom: 10,
               flex: 1,
               resizeMode: "cover"

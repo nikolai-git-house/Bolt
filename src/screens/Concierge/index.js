@@ -12,14 +12,14 @@ import { createAppContainer, createStackNavigator } from "react-navigation";
 
 import Main from "./Main";
 import LiveChat from "./LiveChat";
-
+import TravelBooking from "./Travelbooking";
 export default createStackNavigator(
   {
     Main: {
       screen: Main
     },
-    LiveChat: {
-      screen: LiveChat
+    TravelBooking: {
+      screen: TravelBooking
     }
   },
   {

@@ -17,6 +17,7 @@ import HealthProfile from "./Health";
 import PetsProfile from "./Pets";
 import TravelProfile from "./Travel";
 import SubscriptionProfile from "./Subscriptions";
+import Timeline from "./Timeline";
 import Logo from "../../components/Logo";
 import TopImage from "./component/TopImage";
 import Header from "../../components/Header";
@@ -64,6 +65,9 @@ class Profile extends React.Component {
         break;
       case "Pets":
         return <PetsProfile navigation={this.props.navigation} />;
+        break;
+      case "Timeline":
+        return <Timeline navigation={this.props.navigation} />;
         break;
       case "Subscriptions":
         return <SubscriptionProfile navigation={this.props.navigation} />;

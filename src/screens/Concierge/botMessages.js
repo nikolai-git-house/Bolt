@@ -4,7 +4,7 @@ export const buildBotMessages = profile => {
 
   botMessages.push({
     type: "bot",
-    text: `Hey ${firstname}, How can I help you today?`,
+    text: `Hey ${firstname},\nHow can I help you today?`,
     isUserNext: false
   });
   botMessages.push({

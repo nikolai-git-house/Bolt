@@ -62,6 +62,7 @@ class Wallet extends React.Component {
       Firebase.updateUserData(uid, { tokens: tokens + GIFT_ADDUSER }).then(
         res => {
           this.props.dispatch(saveOnboarding(res));
+          AsyncStorage.setItem("profile", JSON.stringify(res));
         }
       );
       this.toggleInvite(false);

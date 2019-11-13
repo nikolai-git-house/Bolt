@@ -6,7 +6,8 @@ import {
   AsyncStorage,
   View,
   TouchableOpacity,
-  Image
+  Image,
+  FlatList
 } from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import { connect } from "react-redux";
@@ -19,11 +20,13 @@ const personal_img = require("../assets/profile_header/personal.png");
 const groups_img = require("../assets/profile_header/groups.png");
 const pets_img = require("../assets/profile_header/pets.png");
 const subscriptions_img = require("../assets/profile_header/subscription.png");
+const timeline_img = require("../assets/profile_header/timeline.png");
 let packages = [
   { title: "Personal", img: personal_img, index: 0 },
-  { title: "Groups", img: groups_img, index: 1 },
-  { title: "Pets", img: pets_img, index: 2 },
-  { title: "Subscriptions", img: subscriptions_img, index: 3 }
+  // { title: "Groups", img: groups_img, index: 1 },
+  // { title: "Pets", img: pets_img, index: 1 },
+  { title: "Subscriptions", img: subscriptions_img, index: 1 },
+  { title: "Timeline", img: timeline_img, index: 2 }
 ];
 class Header extends React.Component {
   constructor(props) {
@@ -46,7 +49,7 @@ class Header extends React.Component {
   Press = data => {
     const { onTap } = this.props;
     console.log("index", data.index);
-    this._slider1Ref.snapToItem(data.index);
+    //this._slider1Ref.snapToItem(data.index);
     onTap(data.title);
   };
 
@@ -59,14 +62,15 @@ class Header extends React.Component {
           width: "100%",
           height: 100,
           position: "absolute",
-          top: 80,
+          top: 70,
+          //top: 80,
           left: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center"
         }}
       >
-        <Carousel
+        {/* <Carousel
           layout={"default"}
           removeClippedSubviews={false}
           loop={true}
@@ -78,6 +82,18 @@ class Header extends React.Component {
           sliderWidth={sliderWidth}
           itemWidth={80}
           firstItem={activeSlide}
+        /> */}
+        <FlatList
+          contentContainerStyle={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-around",
+            width: "100%"
+          }}
+          data={packages}
+          renderItem={this._renderItem}
+          horizontal={true}
         />
       </View>
     );

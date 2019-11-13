@@ -4,27 +4,31 @@ import {
   Text,
   View,
   TouchableOpacity,
+  TouchableHighlight,
   Image,
-  ImageBackground,
-  ToolbarAndroid,
+  ActivityIndicator,
   AsyncStorage,
   Platform,
   TextInput,
-  WebView
+  WebView,
+  Modal
 } from "react-native";
 import { connect } from "react-redux";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Sound from "react-native-sound";
 import Firebase from "../../firebasehelper";
-import { saveHome } from "../../Redux/actions/index";
+import {
+  saveHome,
+  saveOnboarding,
+  saveInvitation
+} from "../../Redux/actions/index";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
 import StickItem from "../../components/StickItem";
 import { Metrics } from "../../theme";
-const default_avatar = require("../../assets/plus.png");
-const ok_img = require("../../assets/success.png");
-const error_img = require("../../assets/error.png");
-
+import { sendNotification } from "../../apis/index";
+const error_img = require("../../assets/popup/error.png");
+const success_image = require("../../assets/popup/happy_home.png");
 var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
   if (error) {
     console.log("failed to load the sound", error);
@@ -45,24 +49,69 @@ class HomeProfile extends React.Component {
       homepack: "Activate",
       petpack: "Bolt-on",
       homeprofile: {},
-      webview: true
+      webview: true,
+      notification: false,
+      notification_msg: "",
+      processing: false
     };
     this.selectPhotoTapped = this.selectPhotoTapped.bind(this);
   }
+
   componentDidMount() {
-    const { home, basic } = this.props;
-    console.log("home", home);
-    console.log("profile", basic);
-    let packages = basic.packages;
-    let result = false;
-    if (packages) {
-      packages.map((item, index) => {
-        if (item.caption === "Serviced Home Pack") result = true;
-      });
-      this.setState({ homepack: result ? "Activated" : "Activate" });
-    } else this.setState({ homepack: "Activate" });
+    console.log("componentDidMount in Home");
+    this.load();
+    this.props.navigation.addListener("willFocus", this.load);
+    // const { home, basic } = this.props;
+    // let { packages } = basic;
+
+    // let result = false;
+    // if (packages) {
+    //   packages.map((item, index) => {
+    //     if (item.caption === "Serviced Home Pack") result = true;
+    //   });
+    //   this.setState({ homepack: result ? "Activated" : "Activate" });
+    // } else this.setState({ homepack: "Activate" });
+
+    // if (home && Object.keys(home).length !== 0) {
+    //   console.log("home is not empty");
+    //   this.setState({ homeprofile: home });
+    //   this.setState({ webview: false });
+    //   let keyboardScrollView = this.refs.KeyboardAwareScrollView;
+    //   if (keyboardScrollView) keyboardScrollView.update();
+    // } else {
+    //   console.log("home is empty");
+    //   this.setState({ webview: true });
+    // }
+  }
+  async componentWillReceiveProps(nextProps) {
+    console.log("componentWillReceiveProps in Home");
+    //console.log("nextProps", nextProps);
+    const { home } = nextProps;
 
     if (home && Object.keys(home).length !== 0) {
+      console.log("home is not empty");
+      this.setState({ homeprofile: home });
+      this.setState({ webview: false });
+      let keyboardScrollView = this.refs.KeyboardAwareScrollView;
+      if (keyboardScrollView) keyboardScrollView.update();
+    }
+  }
+  load = () => {
+    const { basic, home, invitation } = this.props;
+    const { firstname } = basic;
+    if (invitation) {
+      const { property_id, property_name } = invitation;
+      if (property_id) {
+        console.log("notification popped up");
+        this.setState({
+          notification_msg: `Hello ${firstname}, your landlord has invited you to  ${property_name} as a resident. Once you accept you'll be linked to the property.`,
+          webview: false,
+          property_id,
+          property_name
+        });
+        this.toggleModal();
+      }
+    } else if (home && Object.keys(home).length !== 0) {
       console.log("home is not empty");
       this.setState({ homeprofile: home });
       this.setState({ webview: false });
@@ -72,7 +121,7 @@ class HomeProfile extends React.Component {
       console.log("home is empty");
       this.setState({ webview: true });
     }
-  }
+  };
   selectPhotoTapped(id) {
     let thisElement = this;
     console.log(id);
@@ -122,11 +171,81 @@ class HomeProfile extends React.Component {
     }
     console.log("homeprofile", homeprofile);
   };
+  toggleModal = () => {
+    const { notification } = this.state;
+    this.setState({ notification: !notification });
+  };
+  onAcceptInvitation = () => {
+    const { basic, uid } = this.props;
+    const { property_id } = this.state;
+    console.log("basic in Home", basic);
+    let { phonenumber } = basic;
+    this.setState({ processing: true });
+    Firebase.updateUserData(uid, { groupId: property_id }).then(res => {
+      this.props.dispatch(saveOnboarding(res));
+    });
+    Firebase.acceptInvitation(uid, property_id, phonenumber)
+      .then(res => {
+        console.log("res of Accept", res);
+        this.setState({ processing: false });
+        this.toggleModal();
+        Firebase.getPropertyById(property_id).then(property_data => {
+          const { bedrooms, property_address } = property_data;
+          let address =
+            property_address.first_address_line +
+            " " +
+            property_address.second_address_line;
+          let home_profile = {
+            uid,
+            address,
+            onboardingFinished: true,
+            bedrooms
+          };
+          Firebase.home_signup(home_profile)
+            .then(res => {
+              this.props.dispatch(saveHome(home_profile));
+              AsyncStorage.setItem("homeprofile", JSON.stringify(home_profile));
+              this.props.dispatch(saveInvitation(null));
+            })
+            .catch(err => {
+              alert(err);
+            });
+        });
+      })
+      .catch(err => {
+        console.log("err", err);
+        this.setState({ processing: false });
+        this.toggleModal();
+      });
+  };
+  onRejectInvitation = () => {
+    const { basic, uid } = this.props;
+    const { property_id } = this.state;
+    let { phonenumber } = basic;
+    this.setState({ processing: true });
+    Firebase.rejectInvitation(uid, property_id, phonenumber)
+      .then(res => {
+        console.log("res of rejectInvitation", res);
+        this.props.dispatch(saveInvitation(null));
+        this.setState({ processing: false });
+        this.toggleModal();
+      })
+      .catch(err => {
+        console.log("err", err);
+        this.setState({ processing: false });
+        this.toggleModal();
+      });
+  };
   render() {
     const { basic } = this.props;
     const imgs = this.state.imagesArray;
-    const { homepack, webview, homeprofile } = this.state;
-    console.log("homepack", homepack);
+    const {
+      homepack,
+      webview,
+      homeprofile,
+      notification_msg,
+      processing
+    } = this.state;
     return (
       <View style={styles.maincontainer}>
         {webview && (
@@ -158,17 +277,6 @@ class HomeProfile extends React.Component {
                 backgroundColor: "transparent"
               }}
             >
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontFamily: "Gothic A1",
-                  fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 10
-                }}
-              >
-                My Home Profile
-              </Text>
               <View
                 style={{
                   width: "90%",
@@ -291,6 +399,71 @@ class HomeProfile extends React.Component {
             </View>
           </KeyboardAwareScrollView>
         )}
+        <Modal
+          modalOptions={{ dismissible: false }}
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.notification}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <View style={styles.modal}>
+              <Image source={success_image} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700" }}>
+                Linked Property Notification
+              </Text>
+              <Text style={{ textAlign: "center" }}>{notification_msg}</Text>
+              {!processing && (
+                <View
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-around"
+                  }}
+                >
+                  <TouchableHighlight
+                    onPress={this.onAcceptInvitation}
+                    style={{
+                      backgroundColor: colors.yellow,
+                      width: 100,
+                      height: 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      shadowColor: "black",
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.2,
+                      elevation: 3
+                    }}
+                  >
+                    <Text style={styles.text}>Accept</Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight
+                    onPress={this.onRejectInvitation}
+                    style={{
+                      backgroundColor: colors.yellow,
+                      width: 100,
+                      height: 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      shadowColor: "black",
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.2,
+                      elevation: 3
+                    }}
+                  >
+                    <Text style={styles.text}>Decline</Text>
+                  </TouchableHighlight>
+                </View>
+              )}
+              {processing && (
+                <ActivityIndicator size="large" color={colors.darkblue} />
+              )}
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -423,6 +596,27 @@ const styles = StyleSheet.create({
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
     fontFamily: "Gothic A1"
+  },
+  modal: {
+    position: "absolute",
+    left: "10%",
+    top: "20%",
+    width: "80%",
+    height: "35%",
+    justifyContent: "space-around",
+    alignItems: "center",
+    borderColor: colors.grey,
+    borderWidth: 1,
+    borderRadius: 20,
+    backgroundColor: colors.lightgrey,
+    padding: 10
+  },
+  text: {
+    fontSize: 15,
+    marginBottom: 0,
+    fontFamily: "Gothic A1",
+    textAlign: "center",
+    color: colors.darkblue
   }
 });
 function mapDispatchToProps(dispatch) {
@@ -434,6 +628,7 @@ function mapStateToProps(state) {
   return {
     basic: state.basic,
     uid: state.uid,
+    invitation: state.invitation,
     home: state.home
   };
 }

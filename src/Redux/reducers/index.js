@@ -18,6 +18,7 @@ import { createReducer } from "reduxsauce";
 export const initialState = {
   basic_profile: null,
   uid: "",
+  invitation: null,
   pet: null,
   bike: null,
   health: null,
@@ -37,6 +38,11 @@ const saveOnboardingReducer = (state, action) => ({
 const saveUIDReducer = (state, action) => ({
   ...state,
   uid: action.uid
+});
+
+const saveInvitationReducer = (state, action) => ({
+  ...state,
+  invitation: action.invitation
 });
 
 const savePetReducer = (state, action) => ({
@@ -71,6 +77,7 @@ const saveRedirectTokenReducer = (state, action) => ({
 
 const removeAllReducer = (state, action) => ({
   ...state,
+  invitation: null,
   pet: null,
   bike: null,
   health: null,
@@ -96,6 +103,7 @@ const saveScreenReducer = (state, action) => ({
 const actionHandlers = {
   SAVE_ONBOARDING: saveOnboardingReducer,
   SAVE_UID: saveUIDReducer,
+  SAVE_INVITATION: saveInvitationReducer,
   SAVE_PET: savePetReducer,
   SAVE_BIKE: saveBikeReducer,
   SAVE_HEALTH: saveHealthReducer,

@@ -3,9 +3,11 @@ import { View } from "react-native";
 import { connect } from "react-redux";
 import Home from "./Home";
 import Renting from "./Renting";
+import Housemates from "./Housemates";
 import Logo from "../../components/Logo";
 import TopImage from "../../components/TopImage";
 import colors from "../../theme/Colors";
+import Header from "./component/Header";
 import SwitchButton from "./component/SwitchButton";
 class MyHome extends React.Component {
   constructor(props) {
@@ -19,27 +21,28 @@ class MyHome extends React.Component {
     this.setState({ screen: screen });
   };
   componentDidMount = () => {
-    console.log("this.props in MyHome", this.props);
-    this.load();
-    this.props.navigation.addListener("willFocus", this.load);
+    //this.load();
+    //this.props.navigation.addListener("willFocus", this.load);
   };
   load = () => {
-    const { navigation } = this.props;
-    if (navigation.state.params) {
-      console.log("navigation", navigation);
-      const { page } = navigation.state.params;
-      console.log("page", page);
-      this.setState({ screen: page });
-    }
+    //console.log("loaded!");
+    // if (this.props.navigation.state.params) {
+    //   console.log("navigation", navigation);
+    //   const { page } = navigation.state.params;
+    //   console.log("page", page);
+    //   this.setState({ screen: page });
+    // }
   };
   setScreen = screen => {
-    const { uid } = this.props;
     switch (screen) {
-      case "home":
+      case "Home":
         return <Home {...this.props} />;
         break;
-      case "renting":
+      case "Renting":
         return <Renting {...this.props} />;
+        break;
+      case "Housemates":
+        return <Housemates {...this.props} />;
         break;
       default:
         return <Home {...this.props} />;
@@ -62,16 +65,14 @@ class MyHome extends React.Component {
       >
         <TopImage />
         <Logo />
+        <Header onTap={this.onTap} />
         <View
           style={{
             flex: 1,
-            display: "flex",
-            alignItems: "center",
-            marginTop: 80,
+            marginTop: 180,
             width: "100%"
           }}
         >
-          <SwitchButton onChoose={this.choose} />
           {this.setScreen(screen)}
         </View>
       </View>

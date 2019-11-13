@@ -52,8 +52,10 @@ class PaymentSetup extends React.Component {
     };
   }
   componentDidMount() {
-    const { price, pkgName } = this.props.navigation.state.params;
-    this.setState({ price, pkgName });
+    if (this.props.navigation.state.params) {
+      const { price, pkgName } = this.props.navigation.state.params;
+      this.setState({ price, pkgName });
+    }
   }
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
@@ -62,14 +64,13 @@ class PaymentSetup extends React.Component {
     console.log("card_info", card_info);
     const { price, pkgName } = this.state;
     const { cardNumber, expiry, cvc } = card_info;
-    const { email, firstname, lastname } = this.props.basic;
+    const { email, firstname } = this.props.basic;
     const { uid } = this.props;
     let card_number = cardNumber.replace(/\s/g, "");
     let card_exp = expiry.replace(/\s/g, "");
     let month_year = card_exp.split("/");
     let exp_month = month_year[0];
     let exp_year = "20" + month_year[1];
-    let name = firstname + " " + lastname;
 
     console.log("number", card_number);
     console.log("exp_month", exp_month);
@@ -80,7 +81,7 @@ class PaymentSetup extends React.Component {
       token_data = await createToken(card_number, exp_month, exp_year, cvc);
       let token = token_data.data.id;
       console.log("token", token);
-      let description = "BoltBot Charge for " + name;
+      let description = "BoltBot Charge for " + firstname;
       customer_data = await createCustomer(description, email, token);
       let customer_id = customer_data.data.id;
       let last4 = card_number.substring(12);

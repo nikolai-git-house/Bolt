@@ -17,7 +17,6 @@ import {
 } from "react-native";
 import colors from "../../../theme/Colors";
 import { connect } from "react-redux";
-import { saveOnboarding } from "../../../Redux/actions/index";
 import Sound from "react-native-sound";
 import Firebase from "../../../firebasehelper";
 import MemberItem from "../../../components/MemberItem";
@@ -25,9 +24,8 @@ import { sendInvitation } from "../../../functions/Auth";
 import Metrics from "../../../theme/Metrics";
 import { removeItemfromArray } from "../../../utils/functions";
 const error_img = require("../../../assets/popup/error.png");
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-const invite_img = require("../../../assets/popup/home.png");
-
+const avatar_complete = require("../../../assets/Groups/avatar_complete.png");
+const avatar_pending = require("../../../assets/Groups/avatar_pending.png");
 var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
   if (error) {
     console.log("failed to load the sound", error);
@@ -50,39 +48,75 @@ class GroupProfile extends React.Component {
       webview: false
     };
   }
-  componentDidMount() {
-    const { uid } = this.props;
+  async componentDidMount() {
+    const { uid, basic } = this.props;
     this.setState({ firebase_loading: true });
-    Firebase.findFriends(uid)
-      .then(res => {
-        let member_array = res;
-        let friends = removeItemfromArray(member_array, uid);
-        console.log("friends_array", friends);
-        if (friends) {
-          let promises = friends.map(item => {
-            return Firebase.getUserDatafromUID(item).then(res => {
-              const username = res.firstname + " " + res.lastname;
-              return {
-                username: username,
-                img: res.avatar_url
-              };
-            });
+    const groupId = basic.groupId;
+    let friends = await this.getFriends(groupId);
+    this.setState({ firebase_loading: false });
+    console.log("friends", friends);
+    if (friends.length > 0) {
+      this.setState({ data: friends });
+    } else {
+      this.setState({ webview: true });
+    }
+    //       let promises = friends.map(item => {
+    //         return Firebase.getUserDatafromUID(item).then(res => {
+    //           const username = res.firstname;
+    //           return {
+    //             username: username,
+    //             img: res.avatar_url
+    //           };
+    //         });
+    //       });
+    //       Promise.all(promises).then(res => {
+    //         console.log("friends", res);
+    //         res.push({ username: "", img: "" });
+    //         this.setState({ firebase_loading: false });
+    //         this.setState({ data: res });
+    //       });
+    //     } else {
+    //       this.setState({ firebase_loading: false });
+    //       this.setState({ data: [{ username: "", img: "" }] });
+    //       this.setState({ webview: true });
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.log("Error", err);
+    //   });
+  }
+  getFriends(groupId) {
+    return new Promise(async (resolve, reject) => {
+      if (groupId) {
+        let members = await Firebase.getMemberList(groupId);
+        let promise = members.map(async item => {
+          let uid = item.uid;
+          let username = "";
+          let phone = "";
+          let avatar = "";
+          if (uid) {
+            let user_data = await Firebase.getUserDatafromUID(uid);
+            let { firstname, phonenumber, avatar_url } = user_data;
+            username = firstname;
+            phone = phonenumber;
+            if (avatar_url) avatar = avatar_url;
+            else avatar = avatar_complete;
+          } else {
+            username = item.username;
+            phone = item.phone;
+            avatar = avatar_pending;
+          }
+          return { username, phone, avatar };
+        });
+        Promise.all(promise)
+          .then(res => {
+            resolve(res);
+          })
+          .catch(err => {
+            reject(err);
           });
-          Promise.all(promises).then(res => {
-            console.log("friends", res);
-            res.push({ username: "", img: "" });
-            this.setState({ firebase_loading: false });
-            this.setState({ data: res });
-          });
-        } else {
-          this.setState({ firebase_loading: false });
-          this.setState({ data: [{ username: "", img: "" }] });
-          this.setState({ webview: true });
-        }
-      })
-      .catch(err => {
-        console.log("Error", err);
-      });
+      } else resolve(null);
+    });
   }
   navigateTo = page => {
     this.props.navigation.navigate(page);
@@ -118,7 +152,7 @@ class GroupProfile extends React.Component {
     const { basic } = this.props;
     const { username, data } = this.state;
     const groupId = basic.groupId;
-    const inviter = basic.firstname + " " + basic.lastname;
+    const inviter = basic.firstname;
     if (groupId) {
       Firebase.getProfile(phone).then(res => {
         if (res) {
@@ -161,7 +195,7 @@ class GroupProfile extends React.Component {
   };
   Invite = () => {
     const { basic } = this.props;
-    const inviter = basic.firstname + " " + basic.lastname;
+    const inviter = basic.firstname;
     const { phone, username, data } = this.state;
     if (username) this.addMember(phone);
   };
@@ -251,14 +285,15 @@ class GroupProfile extends React.Component {
             >
               My Housemates Group
             </Text>
-            <ScrollView>
+            <ScrollView contentContainerStyle={{ width: "100%" }}>
               {data.map((obj, index) => {
                 return (
                   <MemberItem
                     key={index}
-                    avatar={obj.img}
+                    avatar={obj.avatar}
                     onAdd={this.onAdd}
                     username={obj.username}
+                    phonenumber={obj.phone}
                   />
                 );
               })}
@@ -319,7 +354,7 @@ class GroupProfile extends React.Component {
                 <View style={styles.modal}>
                   <Text style={styles.Title}>Invitation</Text>
                   <Text style={{ textAlign: "center", marginBottom: 20 }}>
-                    Please input your friend's name and phone number here.
+                    Please input your friend's first name and phone number here.
                   </Text>
                   <TextInput
                     placeholder="+44"
@@ -328,7 +363,7 @@ class GroupProfile extends React.Component {
                     style={styles.input}
                   />
                   <TextInput
-                    placeholder="Firstname Lastname"
+                    placeholder="First Name"
                     onChangeText={txt => this.onChangeUsername(txt)}
                     value={username}
                     style={styles.input}

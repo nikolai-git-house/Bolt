@@ -97,3 +97,19 @@ export const createSubscription = async (customer, plan) => {
     throw Error(err);
   }
 };
+export const sendNotification = async (player_ids, content) => {
+  let contents = { en: content };
+  try {
+    let result = await axios.post(
+      "https://us-central1-boltconcierge-2f0f9.cloudfunctions.net/sendNotification",
+      {
+        player_ids: player_ids,
+        content: contents
+      }
+    );
+    let res = await result.json();
+    return res;
+  } catch (err) {
+    throw Error(err);
+  }
+};

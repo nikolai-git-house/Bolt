@@ -42,7 +42,7 @@ class Landing extends React.Component {
     this.props.navigation.navigate("SignIn");
   };
   joinMember = () => {
-    this.props.navigation.navigate("IntroOne");
+    this.props.navigation.navigate("Onboard");
   };
   render() {
     return (

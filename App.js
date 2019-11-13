@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from "react";
-import { StyleSheet, AppState } from "react-native";
+import { StyleSheet, AppState, AsyncStorage } from "react-native";
 import { createAppContainer, createStackNavigator } from "react-navigation";
 import { Provider } from "react-redux";
 import OneSignal from "react-native-onesignal";
@@ -24,10 +24,13 @@ import ProfileTest from "./src/screens/ChatBot/ProfileTest";
 import ProfileSuccess from "./src/screens/ChatBot/ProfileSuccess";
 import Part2 from "./src/screens/ChatBot/Part2";
 import Concierge from "./src/screens/Concierge";
+import LiveChat from "./src/screens/Concierge/LiveChat";
+import TravelBooking from "./src/screens/Concierge/Travelbooking";
 import Explore from "./src/screens/Explore";
 import colors from "./src/theme/Colors";
 import SignIn from "./src/screens/SignIn/SignIn";
 import PhoneCode from "./src/screens/SignIn/PhoneCode";
+import Firebase from "./src/firebasehelper";
 
 import "./src/utils/fixtimerbug";
 const StackNavigator = createAppContainer(
@@ -35,6 +38,7 @@ const StackNavigator = createAppContainer(
     {
       Logo: LogoScreen,
       Concierge: Concierge,
+      LiveChat: LiveChat,
       Main: AppContainer,
       Onboard: Onboard,
       Explore: Explore,
@@ -94,9 +98,19 @@ export default class App extends Component {
     AppState.removeEventListener("change", this.handleAppStateChange);
   }
 
-  handleAppStateChange = nextAppState => {
+  handleAppStateChange = async nextAppState => {
+    let uid = await AsyncStorage.getItem("uid");
     if (nextAppState === "inactive") {
       console.log("the app is closed");
+      if (uid) {
+        Firebase.updateUserData(uid, { app_opened: false });
+      }
+    }
+    if (nextAppState === "active") {
+      console.log("the app is resumed");
+      if (uid) {
+        Firebase.updateUserData(uid, { app_opened: true });
+      }
     }
   };
 

@@ -7,6 +7,7 @@ import {
   ScrollView,
   Keyboard,
   TouchableOpacity,
+  Image,
   DeviceEventEmitter
 } from "react-native";
 import { connect } from "react-redux";
@@ -36,7 +37,9 @@ class LiveChat extends React.Component {
       keyboard_Height: 0,
       message_txt: "",
       messages: [],
-      typing: false
+      agency_typing: false,
+      landlord_typing: false,
+      title: ""
     };
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
@@ -56,20 +59,36 @@ class LiveChat extends React.Component {
     this.keyboardDidHideListener.remove();
   }
   componentDidMount() {
-    const { room_id } = this.props.navigation.state.params;
-    Firebase.getChats(room_id, res => {
+    const { uid, ticket_id } = this.props.navigation.state.params;
+    console.log("this.props.navigation", this.props.navigation);
+    console.log("uid,ticket in live", uid, ticket_id);
+    Firebase.readMessage(uid);
+    Firebase.getChats(uid, ticket_id, res => {
       let chats = Object.values(res);
+      console.log("chats", chats);
       this.setState({ messages: chats });
     });
-    Firebase.getAgencyTyping(room_id, typing => {
-      this.setState({ typing: typing });
+    Firebase.getTicketData(uid, ticket_id, res => {
+      console.log("uid, ticket_id", uid, ticket_id);
+      console.log("ticket_Data", res);
+      const { item, room, adjective, issue } = res;
+      let title = "";
+      if (item) {
+        title = "The " + item + " in the " + room + " is " + adjective;
+      } else title = issue;
+      this.setState({ title });
     });
-    Firebase.getStatus(room_id, established => {
-      if (established === "false") {
-        console.log("established false");
-        DeviceEventEmitter.emit("clear_chatbot", {});
-        this.props.navigation.goBack();
-      }
+    Firebase.getAgencyTyping(uid, ticket_id, typing => {
+      this.setState({ agency_typing: typing });
+    });
+    Firebase.getLandlordTyping(uid, ticket_id, typing => {
+      this.setState({ landlord_typing: typing });
+    });
+    Firebase.getContractorTyping(uid, ticket_id, typing => {
+      this.setState({ contractor_typing: typing });
+    });
+    Firebase.getStatus(uid, ticket_id, status => {
+      console.log("status", status);
     });
   }
 
@@ -89,12 +108,20 @@ class LiveChat extends React.Component {
   setMessages() {
     console.log("setMessages");
     const { messages } = this.state;
+    const { avatar_url } = this.props.basic;
     let self = this;
     setTimeout(() => {
       if (self.refs.scrollView) self.refs.scrollView.scrollToEnd();
     }, 100);
     return messages.map((message, i) => {
-      return <BubbleText message={message} key={i} typing={false} />;
+      return (
+        <BubbleText
+          message={message}
+          key={i}
+          typing={false}
+          avatar_url={avatar_url}
+        />
+      );
     });
   }
   setMessageInState(message) {
@@ -103,12 +130,12 @@ class LiveChat extends React.Component {
     this.setState({ messages });
   }
   addMessage = message => {
-    const { room_id } = this.props.navigation.state.params;
+    const { uid, ticket_id } = this.props.navigation.state.params;
     setTimeout(() => {
       this.refs.scrollView.scrollToEnd();
     }, 100);
     this.setMessageInState(message);
-    Firebase.addMessage(room_id, message, res => {
+    Firebase.addMessage(uid, ticket_id, message, res => {
       console.log("addedChat", res);
     });
   };
@@ -121,24 +148,35 @@ class LiveChat extends React.Component {
     if (message_txt) this.addMessage({ type: "user", message: message_txt });
   };
   onChangeMessage = text => {
-    const { room_id } = this.props.navigation.state.params;
-    Firebase.setTypeValue(room_id, true);
+    const { uid, ticket_id } = this.props.navigation.state.params;
+    console.log("uid,ticket_id", uid, ticket_id);
+    Firebase.setTypeValue(uid, ticket_id, true);
     if (timer) clearTimeout(timer);
     timer = setTimeout(function() {
-      Firebase.setTypeValue(room_id, false);
+      Firebase.setTypeValue(uid, ticket_id, false);
     }, 1000);
     this.setState({ message_txt: text });
   };
   terminate = () => {
-    const { room_id } = this.props.navigation.state.params;
-    Firebase.terminateChat(room_id, res => {
+    const { uid, ticket_id } = this.props.navigation.state.params;
+    Firebase.terminateChat(uid, ticket_id, res => {
       if (res === "success") {
         console.log("Terminated chat");
       }
     });
   };
+  onGoBack = () => {
+    this.props.navigation.goBack();
+  };
   render() {
-    const { keyboard_Height, message_txt, typing } = this.state;
+    const {
+      keyboard_Height,
+      message_txt,
+      agency_typing,
+      landlord_typing,
+      contractor_typing,
+      title
+    } = this.state;
     return (
       <View style={styles.maincontainer}>
         <View
@@ -153,42 +191,77 @@ class LiveChat extends React.Component {
         >
           <TopImage />
           <Logo />
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              top: 40,
+              left: 10,
+              zIndex: 1000,
+              display: "flex",
+              alignItems: "flex-start",
+              position: "absolute"
+            }}
+            onPress={this.onGoBack}
+          >
+            <Image
+              style={styles.tabbutton}
+              source={require("../../assets/Explore/community/back.png")}
+            />
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            marginBottom: 5,
+            marginTop: 100
+          }}
+        >
+          <Text style={{ fontWeight: "700" }}>{title}</Text>
         </View>
         <ScrollView
           ref="scrollView"
-          style={{ marginTop: 80, paddingLeft: 16 }}
+          style={{ paddingLeft: 16 }}
           contentContainerStyle={{
             width: "100%",
-
-            minHeight: Metrics.screenHeight - 130
+            minHeight: Metrics.screenHeight - TAB_HEIGHT
           }}
           keyboardShouldPersistTaps={"handled"}
         >
-          <View style={{ height: 20 }} />
+          <View style={{ height: 70 }}></View>
           {this.setMessages()}
-          {typing && <BubbleText message={{ type: "agency" }} typing={true} />}
+          {agency_typing && (
+            <BubbleText message={{ type: "agency" }} agency_typing={true} />
+          )}
+          {landlord_typing && (
+            <BubbleText message={{ type: "landlord" }} landlord_typing={true} />
+          )}
+          {contractor_typing && (
+            <BubbleText
+              message={{ type: "contractor" }}
+              contractor_typing={true}
+            />
+          )}
           <MessageInput
             style={{ marginTop: "auto" }}
             onChange={this.onChangeMessage}
             onSend={this.SendMessage}
             value={message_txt}
           />
-          <TouchableOpacity
-            style={styles.CalltoAction}
-            onPress={this.terminate}
-          >
-            <Text style={styles.button}>EndChat</Text>
-          </TouchableOpacity>
         </ScrollView>
-        {/* {this.state.keyboard == "visible" && (
+
+        {this.state.keyboard == "visible" && (
           <View
             style={{
               width: "100%",
-              height: keyboard_Height - TAB_HEIGHT,
+              height: keyboard_Height,
               backgroundColor: "rgba(52, 52, 52, 0.0)"
             }}
           />
-        )} */}
+        )}
       </View>
     );
   }
@@ -204,10 +277,13 @@ const styles = StyleSheet.create({
     paddingTop: 29,
     backgroundColor: colors.white
   },
-  CalltoAction: {
+  closeButton: {
+    position: "absolute",
+    top: 35,
+    right: 0,
+    zIndex: 1000,
     opacity: 0.8,
     marginRight: 10,
-    marginTop: 10,
     backgroundColor: colors.darkblue,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
@@ -217,13 +293,17 @@ const styles = StyleSheet.create({
   },
   button: {
     color: colors.white,
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Gothic A1",
-    fontWeight: "100",
+    fontWeight: "300",
     paddingTop: 10,
     paddingBottom: 10,
     paddingLeft: 22,
     paddingRight: 22
+  },
+  tabbutton: {
+    width: 25,
+    height: 25
   }
 });
 function mapDispatchToProps(dispatch) {

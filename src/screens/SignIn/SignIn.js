@@ -85,7 +85,8 @@ class SignIn extends React.Component {
             style={{
               fontSize: 25,
               fontFamily: "Gothic A1",
-              fontWeight: "400"
+              fontWeight: "400",
+              marginBottom: 0
             }}
           >
             Sign In

@@ -12,6 +12,7 @@ export const SAVE_PET = "SAVE_PET";
 export const SAVE_BIKE = "SAVE_BIKE";
 export const SAVE_HEALTH = "SAVE_HEALTH";
 export const SAVE_HOME = "SAVE_HOME";
+export const SAVE_INVITATION = "SAVE_INVITATION";
 export const SAVE_RENT = "SAVE_RENT";
 export const SAVE_REDIRECT_TOKEN = "SAVE_REDIRECT_TOKEN";
 export const REMOVE_ALL = "REMOVE_ALL";
@@ -19,11 +20,16 @@ export const SAVE_COMINGFLAG = "SAVE_COMINGFLAG";
 export const SAVE_POST = "SAVE_POST";
 export const SAVE_ALLUSER = "SAVE_ALLUSER";
 export const SAVE_SCREEN = "SAVE_SCREEN";
+
 export const saveOnboarding = basicInfo => ({
   type: SAVE_ONBOARDING,
   basic: basicInfo
 });
 export const saveUID = uid => ({ type: SAVE_UID, uid: uid });
+export const saveInvitation = invitation => ({
+  type: SAVE_INVITATION,
+  invitation: invitation
+});
 export const savePet = pet => ({
   type: SAVE_PET,
   pet: pet

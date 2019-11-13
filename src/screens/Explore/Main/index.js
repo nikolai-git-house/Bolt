@@ -152,7 +152,6 @@ class Main extends React.Component {
         this.setState({ loadingdata: false });
         let packageName = pkgName;
         let sender_email = basic.email;
-        const username = basic.firstname + " " + basic.lastname;
         console.log("basic", basic);
         let groupId = basic.groupId ? basic.groupId : "No";
         let receiver_email = "preregister@boltlabs.co.uk";
@@ -161,7 +160,7 @@ class Main extends React.Component {
           sender_email,
           packageName,
           `package/product: ${packageName}. Property/GroupID:${groupId} `,
-          username
+          basic.firstname
         );
       }
     }

@@ -1,335 +1,175 @@
-export const grant_type = "password";
-export const client_id =
-  "3MVG9qQjGkWUbcrEPx0UB_Dt_8OiIw_9bCAlmY9FkeVce56T_NRPWWzBnBVAMBo8sC70j9eVIc7rhCIvbJtlW";
-export const client_secret = "8510413236952768843";
-export const username = "chris-blwc@force.com.procopy";
-export const SFpassword = "pin@2019";
-export const response_type = "token";
-export const redirect_uri = "http://boltconcierge-2f0f9.firebaseapp.com";
-export const scope = "refresh_token full";
-export const display = "touch";
-export const B_Questions = [
-  "Hi, I'm your personal concierge. Your wish is my command. What name may I call you by?",
-  "To what address can I send you your welcome pack?",
-  "What is your data of birth?",
-  "Finally I need your mobile to verify you aren't a robot.",
-  "I've just sent you a sms.",
-  "Amazing! We are good to go.",
-  "Sorry! Verification Code mismatch. Try again."
-];
-export const PlaceHolder = [
-  "First Name Second Name",
-  "Number, StreetName, City, Postcode",
-  "DD/MM/YYYY"
-];
-export const InfoGuide_Text = [
-  "Welcome to your profile test user name... Help us to capture your suitability for properties and packages via Bolt.",
-  "It takes less than 6 minutes. We reward you with money off our packages.",
-  "Would you classify yourself as creative or functional person?",
-  "What do you prefer doing in your spare time?",
-  "What is your favourite pet?",
-  "By saving £400 a month, how will you spend this?",
-  "What is your current employment status?",
-  "Gross annual salary?",
-  "Status of your current address?",
-  "Email address to verify account.",
-  "Declaration that the information you have supplied is your own, true and accurate."
-];
-export const address_status = ["Owned", "Rented", "Living with parents"];
-export const country_names = [
-  "Afghanistan",
-  "Albania",
-  "Algeria",
-  "Andorra",
-  "Angola",
-  "Anguilla",
-  "Antigua &amp; Barbuda",
-  "Argentina",
-  "Armenia",
-  "Aruba",
-  "Australia",
-  "Austria",
-  "Azerbaijan",
-  "Bahamas",
-  "Bahrain",
-  "Bangladesh",
-  "Barbados",
-  "Belarus",
-  "Belgium",
-  "Belize",
-  "Benin",
-  "Bermuda",
-  "Bhutan",
-  "Bolivia",
-  "Bosnia &amp; Herzegovina",
-  "Botswana",
-  "Brazil",
-  "British Virgin Islands",
-  "Brunei",
-  "Bulgaria",
-  "Burkina Faso",
-  "Burundi",
-  "Cambodia",
-  "Cameroon",
-  "Cape Verde",
-  "Cayman Islands",
-  "Chad",
-  "Chile",
-  "China",
-  "Colombia",
-  "Congo",
-  "Cook Islands",
-  "Costa Rica",
-  "Cote D Ivoire",
-  "Croatia",
-  "Cruise Ship",
-  "Cuba",
-  "Cyprus",
-  "Czech Republic",
-  "Denmark",
-  "Djibouti",
-  "Dominica",
-  "Dominican Republic",
-  "Ecuador",
-  "Egypt",
-  "El Salvador",
-  "Equatorial Guinea",
-  "Estonia",
-  "Ethiopia",
-  "Falkland Islands",
-  "Faroe Islands",
-  "Fiji",
-  "Finland",
-  "France",
-  "French Polynesia",
-  "French West Indies",
-  "Gabon",
-  "Gambia",
-  "Georgia",
-  "Germany",
-  "Ghana",
-  "Gibraltar",
-  "Greece",
-  "Greenland",
-  "Grenada",
-  "Guam",
-  "Guatemala",
-  "Guernsey",
-  "Guinea",
-  "Guinea Bissau",
-  "Guyana",
-  "Haiti",
-  "Honduras",
-  "Hong Kong",
-  "Hungary",
-  "Iceland",
-  "India",
-  "Indonesia",
-  "Iran",
-  "Iraq",
-  "Ireland",
-  "Isle of Man",
-  "Israel",
-  "Italy",
-  "Jamaica",
-  "Japan",
-  "Jersey",
-  "Jordan",
-  "Kazakhstan",
-  "Kenya",
-  "Kuwait",
-  "Kyrgyz Republic",
-  "Laos",
-  "Latvia",
-  "Lebanon",
-  "Lesotho",
-  "Liberia",
-  "Libya",
-  "Liechtenstein",
-  "Lithuania",
-  "Luxembourg",
-  "Macau",
-  "Macedonia",
-  "Madagascar",
-  "Malawi",
-  "Malaysia",
-  "Maldives",
-  "Mali",
-  "Malta",
-  "Mauritania",
-  "Mauritius",
-  "Mexico",
-  "Moldova",
-  "Monaco",
-  "Mongolia",
-  "Montenegro",
-  "Montserrat",
-  "Morocco",
-  "Mozambique",
-  "Namibia",
-  "Nepal",
-  "Netherlands",
-  "Netherlands Antilles",
-  "New Caledonia",
-  "New Zealand",
-  "Nicaragua",
-  "Niger",
-  "Nigeria",
-  "Norway",
-  "Oman",
-  "Pakistan",
-  "Palestine",
-  "Panama",
-  "Papua New Guinea",
-  "Paraguay",
-  "Peru",
-  "Philippines",
-  "Poland",
-  "Portugal",
-  "Puerto Rico",
-  "Qatar",
-  "Reunion",
-  "Romania",
-  "Russia",
-  "Rwanda",
-  "Saint Pierre &amp; Miquelon",
-  "Samoa",
-  "San Marino",
-  "Satellite",
-  "Saudi Arabia",
-  "Senegal",
-  "Serbia",
-  "Seychelles",
-  "Sierra Leone",
-  "Singapore",
-  "Slovakia",
-  "Slovenia",
-  "South Africa",
-  "South Korea",
-  "Spain",
-  "Sri Lanka",
-  "St Kitts &amp; Nevis",
-  "St Lucia",
-  "St Vincent",
-  "St. Lucia",
-  "Sudan",
-  "Suriname",
-  "Swaziland",
-  "Sweden",
-  "Switzerland",
-  "Syria",
-  "Taiwan",
-  "Tajikistan",
-  "Tanzania",
-  "Thailand",
-  "Timor L'Este",
-  "Togo",
-  "Tonga",
-  "Trinidad &amp; Tobago",
-  "Tunisia",
-  "Turkey",
-  "Turkmenistan",
-  "Turks &amp; Caicos",
-  "Uganda",
-  "Ukraine",
-  "United Arab Emirates",
-  "United Kingdom",
-  "Uruguay",
-  "Uzbekistan",
-  "Venezuela",
-  "Vietnam",
-  "Virgin Islands (US)",
-  "Yemen",
-  "Zambia",
-  "Zimbabwe"
-];
-export const time_out = 1000;
-export const sender_height = 50;
-export const loadingGIF_height = 30;
-export const first_bubble_height = 180;
-export const fontsize = {
-  salary: 18,
-  email: 15
-};
-export const packages = [
-  {
-    img_name: "member.png",
-    caption: "Members Pack",
-    subcaption_1: "Insider members access to savings,",
-    subcaption_2: "VIP treatment,life building & perks",
-    contents: [
-      "- 8-20% cashback on 80 retailers",
-      "- Restaurants and entertainment perks",
-      "- Members parties & socials",
-      "- Free coffee,beer & prosecco",
-      "- Grow & view your credit rating",
-      "- Work towards a mortgage"
-    ],
-    footer_1: "£5 per month. Subscription bases",
-    footer_2: "Save on av £130 pm"
-  },
-  {
-    img_name: "home.png",
-    caption: "Home Pack",
-    subcaption_1: "The dream serviced home,",
-    subcaption_2: "it's like staying in a hotel",
-    contents: [
-      "- 24 hour home concierge",
-      "- All utilites & energy",
-      "- Wifi & Netflix",
-      "- All maintenance covered",
-      "- All damage covered",
-      "- Monthly & End Cleaning"
-    ],
-    footer_1: "£5 per month subscription",
-    footer_2: "Save on av £75 pm"
-  },
-  {
-    img_name: "pets.png",
-    caption: "Pets Pack",
-    subcaption_1: "Perfect for renters who want to",
-    subcaption_2: "live with their pet hassle free.",
-    contents: [
-      "- Pets Concierge",
-      "- Pet passport to rent with them",
-      "- Pet damage covered",
-      "- Exclusive pets discounts",
-      "- Free Goodle Boxes & treats",
-      "- Monthly Cleaning"
-    ],
-    footer_1: "£30 per month subscription",
-    footer_2: " Save on average £130 pm"
-  },
-  {
-    img_name: "pets.png",
-    caption: "Gold Renter Pack",
-    subcaption_1: "Perfect for renters who want to",
-    subcaption_2: "live with their pet hassle free.",
-    contents: [
-      "- Pets Concierge",
-      "- Pet passport to rent with them",
-      "- Pet damage covered",
-      "- Exclusive pets discounts",
-      "- Free Goodle Boxes & treats",
-      "- Monthly Cleaning"
-    ],
-    footer_1: "£30 per month subscription",
-    footer_2: " Save on average £130 pm"
-  },
-  {
-    img_name: "pets.png",
-    caption: "Silver Renter Pack",
-    subcaption_1: "Perfect for renters who want to",
-    subcaption_2: "live with their pet hassle free.",
-    contents: [
-      "- Pets Concierge",
-      "- Pet passport to rent with them",
-      "- Pet damage covered",
-      "- Exclusive pets discounts",
-      "- Free Goodle Boxes & treats",
-      "- Monthly Cleaning"
-    ],
-    footer_1: "£30 per month subscription",
-    footer_2: " Save on average £130 pm"
+const home_emergency_img = require("../assets/choice/newicons/0_home_emergencies.png");
+const flood_water_img = require("../assets/choice/newicons/0.1_water_flood.png");
+const fire_img = require("../assets/choice/newicons/0.2_fire.png");
+const gas_leak_img = require("../assets/choice/newicons/0.3_gas_leak.png");
+const burglary_img = require("../assets/choice/newicons/0.4_burglary.png");
+const home_repair_img = require("../assets/choice/newicons/1_home_repair.png");
+const subscription_packages_img = require("../assets/choice/newicons/15_subscription_packages.png");
+const my_subscriptions_img = require("../assets/choice/newicons/16_my_subscriptions.png");
+const wellness_img = require("../assets/choice/newicons/17_wellness.png");
+const health_img = require("../assets/choice/newicons/18_health.png");
+const home_utilities_img = require("../assets/choice/newicons/19_home_utilities.png");
+const token_img = require("../assets/choice/newicons/20_tokens.png");
+const travel_img = require("../assets/choice/newicons/21_travel_bookings.png");
+const dining_drinking_img = require("../assets/choice/newicons/22_dining_drinking.png");
+const arts_culture_img = require("../assets/choice/newicons/23_arts_cultures.png");
+const entertainment_img = require("../assets/choice/newicons/24_entertainment.png");
+const beauty_treatments_img = require("../assets/choice/newicons/25_beauty_treatments.png");
+const groceries_shopping_img = require("../assets/choice/newicons/26_groceries_shopping.png");
+const fashion_shopping_img = require("../assets/choice/newicons/27_fashion_shopping.png");
+const pets_img = require("../assets/choice/newicons/28_pets.png");
+const bike_scooter_img = require("../assets/choice/newicons/29_bike_scooter.png");
+const talk_img = require("../assets/choice/newicons/30_talk_to_a_human.png");
+const app_bug_img = require("../assets/choice/newicons/31_app_bugs.png");
+const cashback_img = require("../assets/choice/newicons/35_cashback.png");
+const healthy_eating_img = require("../assets/choice/newicons/36_healthy_eating.png");
+const music_img = require("../assets/choice/newicons/37_music.png");
+const my_card_img = require("../assets/choice/newicons/38_my_card.png");
+const my_housemates_img = require("../assets/choice/newicons/39_my_housemates.png");
+const my_trips_img = require("../assets/choice/newicons/40_my_trips.png");
+const request_callback_img = require("../assets/choice/newicons/41_request_callback.png");
+const speak_to_a_doctor_img = require("../assets/choice/newicons/42_speak_to_a_doctor.png");
+const sport_img = require("../assets/choice/newicons/43_sport.png");
+export function getChoiceImageByTicketId(ticket_id) {
+  let ticket_str = ticket_id.toString();
+  let ticket = ticket_str.split(".");
+  let ticketID = ticket[0];
+  console.log("ticketID", ticketID);
+  switch (ticketID) {
+    case "0":
+      return home_emergency_img;
+      break;
+    case "1":
+      return home_repair_img;
+      break;
+    case "2":
+      return home_repair_img;
+      break;
+    case "3":
+      return home_repair_img;
+      break;
+    case "4":
+      return home_repair_img;
+      break;
+    case "5":
+      return home_repair_img;
+      break;
+    case "6":
+      return home_repair_img;
+      break;
+    case "7":
+      return home_repair_img;
+      break;
+    case "8":
+      return home_repair_img;
+      break;
+    case "9":
+      return home_repair_img;
+      break;
+    case "10":
+      return home_repair_img;
+      break;
+    case "11":
+      return home_repair_img;
+      break;
+    case "12":
+      return home_repair_img;
+      break;
+    case "13":
+      return home_repair_img;
+      break;
+    case "14":
+      return home_repair_img;
+      break;
+    case "15":
+      return subscription_packages_img;
+      break;
+    case "16":
+      return my_subscriptions_img;
+      break;
+    case "17":
+      return wellness_img;
+      break;
+    case "18":
+      return health_img;
+      break;
+    case "19":
+      return home_utilities_img;
+      break;
+    case "20":
+      return token_img;
+      break;
+    case "21":
+      return travel_img;
+      break;
+    case "22":
+      return dining_drinking_img;
+      break;
+    case "23":
+      return arts_culture_img;
+      break;
+    case "24":
+      return entertainment_img;
+      break;
+    case "25":
+      return beauty_treatments_img;
+      break;
+    case "26":
+      return groceries_shopping_img;
+      break;
+    case "27":
+      return fashion_shopping_img;
+      break;
+    case "28":
+      return pets_img;
+      break;
+    case "29":
+      return bike_scooter_img;
+      break;
+    case "30":
+      return talk_img;
+      break;
+    case "31":
+      return app_bug_img;
+      break;
+    case "35":
+      return cashback_img;
+      break;
+    case "36":
+      return healthy_eating_img;
+      break;
+    case "37":
+      return music_img;
+      break;
+    case "38":
+      return my_card_img;
+      break;
+    case "39":
+      return my_housemates_img;
+      break;
+    case "40":
+      return my_trips_img;
+      break;
+    case "41":
+      return request_callback_img;
+      break;
+    case "42":
+      return speak_to_a_doctor_img;
+      break;
+    case "43":
+      return sport_img;
+      break;
   }
+}
+export const credit_members = [
+  "+447539997649",
+  "+447940119153",
+  "+447849392982",
+  "+447751637988",
+  "+447825152007",
+  "+447554035979",
+  "+447754197910",
+  "+447850740759",
+  "+447473308537",
+  "+447748764554"
 ];

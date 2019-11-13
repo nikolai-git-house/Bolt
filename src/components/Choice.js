@@ -105,7 +105,7 @@ class Choice extends React.Component {
           src: my_health_wellness_img,
           value: [
             {
-              id: "tbc",
+              id: 42,
               title: "Speak to a doctor",
               src: speak_to_a_doctor_img
             },
@@ -116,16 +116,22 @@ class Choice extends React.Component {
           ]
         },
         {
-          title: "My Social Life",
-          src: my_social_life_img,
-          value: [
-            { id: 22, title: "Dining & Drinking", src: dining_drinking_img },
-            { id: 23, title: "Arts & Culture", src: arts_culture_img },
-            { id: 24, title: "Entertainment", src: entertainment_img },
-            { id: 43, title: "Sport", src: sport_img },
-            { id: 37, title: "Music", src: music_img }
-          ]
+          title: "Dining & Bars",
+          id: 22,
+          src: dining_drinking_img,
+          value: []
         },
+        // {
+        //   title: "My Social Life",
+        //   src: my_social_life_img,
+        //   value: [
+        //     { id: 22, title: "Dining & Bars", src: dining_drinking_img },
+        //     { id: 23, title: "Arts & Culture", src: arts_culture_img },
+        //     { id: 24, title: "Entertainment", src: entertainment_img },
+        //     { id: 43, title: "Sport", src: sport_img },
+        //     { id: 37, title: "Music", src: music_img }
+        //   ]
+        // },
         {
           title: "My Wallet",
           src: my_wallet_img,
@@ -165,7 +171,8 @@ class Choice extends React.Component {
       second_layer: [],
       second_layer_visible: false,
       on_renting_clicked: false,
-      on_calendar_clicked: false
+      on_calendar_clicked: false,
+      choice_selected: false
     };
   }
   componentDidMount() {
@@ -178,8 +185,10 @@ class Choice extends React.Component {
   };
   selectChoice = choice => {
     const { on_selectChoice } = this.props;
-    if (choice.id) on_selectChoice(choice);
-    else this.setState({ emergency_visible: true });
+    if (choice.id) {
+      on_selectChoice(choice);
+      this.setState({ choice_selected: true });
+    } else this.setState({ emergency_visible: true });
   };
   selectEmergency = choice => {
     this.setState({ emergency_visible: false });
@@ -204,16 +213,21 @@ class Choice extends React.Component {
     this.setState({ emergency_visible: false });
   };
   selectInFirstLayer = item => {
+    const { scrollView } = this.props;
     console.log("item.title", item.title);
-    if (item.title === "My Renting") {
+    if (item.title === "Dining & Bars") {
+      this.selectChoice(item);
+    } else if (item.title === "My Renting") {
       this.setState({ on_renting_clicked: true, on_calendar_clicked: false });
     } else if (item.title === "My Calendar") {
       this.setState({ on_calendar_clicked: true, on_renting_clicked: false });
+    } else {
+      this.setState({
+        second_layer: item.value,
+        second_layer_visible: true
+      });
+      setTimeout(() => scrollView.scrollToEnd(), 200);
     }
-    this.setState({
-      second_layer: item.value,
-      second_layer_visible: true
-    });
   };
   render() {
     const {
@@ -221,7 +235,8 @@ class Choice extends React.Component {
       second_layer,
       second_layer_visible,
       on_calendar_clicked,
-      on_renting_clicked
+      on_renting_clicked,
+      choice_selected
     } = this.state;
     const animatedStyle = { transform: [{ scale: this.animatedValue }] };
     return (
@@ -260,61 +275,34 @@ class Choice extends React.Component {
           />
         )}
         {on_renting_clicked && (
-          <View>
-            <View style={{ height: 50 }}></View>
-            <MessageItem
-              message={{
-                type: "bot",
-                text:
-                  "We don't offer renting right now but we will soon. Hang tight."
-              }}
-            />
-          </View>
+          <MessageItem
+            message={{
+              type: "bot",
+              text:
+                "We don't offer renting right now but we will soon. Hang tight."
+            }}
+          />
         )}
         {on_calendar_clicked && (
-          <View>
-            <View style={{ height: 50 }}></View>
-            <MessageItem
-              message={{
-                type: "bot",
-                text:
-                  "Calendar isn't quite ready yet but it will be soon. Hang tight."
-              }}
-            />
-          </View>
+          <MessageItem
+            message={{
+              type: "bot",
+              text:
+                "Calendar isn't quite ready yet but it will be soon. Hang tight."
+            }}
+          />
         )}
         {second_layer_visible && (
           <View
             style={{
               width: "100%",
-              height: "100%",
+              height: 300,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "space-around"
+              justifyContent: "space-between"
             }}
           >
-            <TouchableOpacity
-              onPress={() =>
-                this.setState({
-                  second_layer_visible: false,
-                  on_renting_clicked: false,
-                  on_calendar_clicked: false
-                })
-              }
-              style={styles.button}
-            >
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontFamily: "Gothic A1",
-                  fontWeight: "400",
-                  marginBottom: 0
-                }}
-              >
-                Back
-              </Text>
-            </TouchableOpacity>
             <FlatList
               data={this.state.second_layer}
               renderItem={({ item, index }) => (
@@ -346,6 +334,26 @@ class Choice extends React.Component {
               numColumns={3}
               keyExtractor={(item, index) => index}
             />
+            {!choice_selected && (
+              <TouchableOpacity
+                onPress={() =>
+                  this.setState({
+                    second_layer_visible: false,
+                    on_renting_clicked: false,
+                    on_calendar_clicked: false
+                  })
+                }
+                style={styles.button}
+              >
+                <Text
+                  style={{
+                    color: "#999999"
+                  }}
+                >
+                  Back
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
         <Modal
@@ -430,12 +438,17 @@ const styles = StyleSheet.create({
     padding: 10
   },
   button: {
-    paddingTop: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: colors.darkblue
+    width: 100,
+    height: 40,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    backgroundColor: colors.white,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    elevation: 3
   }
 });

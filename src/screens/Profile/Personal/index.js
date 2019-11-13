@@ -58,7 +58,6 @@ class PersonalProfile extends React.Component {
       profiletest_webview: false,
       basic: {
         firstname: "",
-        lastname: "",
         dob: "",
         phonenumber: ""
       }
@@ -95,7 +94,6 @@ class PersonalProfile extends React.Component {
     if (!basic) {
       basic = {
         firstname: "test",
-        lastname: "test",
         dob: "08/12/1994",
         phonenumber: "+971553818380"
       };
@@ -241,7 +239,6 @@ class PersonalProfile extends React.Component {
   render() {
     const {
       firstname,
-      lastname,
       dob,
       phonenumber,
       activated,
@@ -293,7 +290,7 @@ class PersonalProfile extends React.Component {
                 marginBottom: 0
               }}
             >
-              {firstname} {lastname}'s ID
+              {firstname}'s ID
             </Text>
             <View
               style={{
@@ -358,7 +355,7 @@ class PersonalProfile extends React.Component {
               </View>
             </View>
 
-            {/* <View style={styles.buttonContainer}>
+            <View style={styles.buttonContainer}>
               <Image source={member_img} style={styles.img} />
               <View
                 style={{
@@ -382,7 +379,7 @@ class PersonalProfile extends React.Component {
                   Take Test
                 </Text>
               </TouchableOpacity>
-            </View> */}
+            </View>
           </KeyboardAwareScrollView>
         )}
 

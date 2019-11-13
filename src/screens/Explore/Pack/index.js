@@ -107,9 +107,8 @@ class Pack extends React.Component {
               return new Promise((resolve, reject) => {
                 Firebase.getUserDatafromUID(item)
                   .then(result => {
-                    const fullname = result.firstname + " " + result.lastname;
                     resolve({
-                      fullname: fullname,
+                      firstname: result.firstname,
                       ispayable: result.customer_id ? true : false
                     });
                   })
@@ -124,7 +123,7 @@ class Pack extends React.Component {
               let username_list = "";
               let ispayable = true;
               result.forEach(item => {
-                username_list += `${item.fullname} - £${final_price}\n `;
+                username_list += `${item.firstname} - £${final_price}\n `;
               });
               this.setState({
                 confirm_msg: `${username_list} \nOnce you confirm Bolt will:\n 1. Create your monthly subscription\n 2.Invite your group to subscribe`

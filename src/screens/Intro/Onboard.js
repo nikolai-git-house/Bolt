@@ -8,14 +8,14 @@ import {
   TouchableOpacity,
   Image,
   WebView,
-  Alert
+  Alert,
+  Modal
 } from "react-native";
 import { connect } from "react-redux";
 import Sound from "react-native-sound";
 import colors from "../../theme/Colors";
 import Logo from "../../components/Logo";
 import TopImage from "../../components/TopImage";
-
 import { Metrics } from "../../theme";
 import {
   saveOnboarding,
@@ -27,6 +27,7 @@ import {
 } from "../../Redux/actions/index";
 import Firebase from "../../firebasehelper";
 const back_img = require("../../assets/back.png");
+const ballon_image = require("../../assets/popup/balloon.png");
 var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
   if (error) {
     console.log("failed to load the sound", error);
@@ -40,11 +41,16 @@ class Onboard extends React.Component {
     this.state = {
       username: "",
       firstname: "",
-      lastname: "",
       phone: "",
       DOB: "",
-      renter_owner: ""
+      renter_owner: "",
+      credit_Visible: false
     };
+  }
+  componentDidMount() {
+    Firebase.getCreditMembers().then(res => {
+      this.setState({ credit_members: res });
+    });
   }
   onLoadFinished = () => {
     if (this.webview) {
@@ -54,6 +60,9 @@ class Onboard extends React.Component {
   };
   goBack = () => {
     this.props.navigation.goBack();
+  };
+  toggleModal = value => {
+    this.setState({ credit_Visible: value });
   };
   render() {
     const { username, phone, DOB } = this.state;
@@ -102,30 +111,71 @@ class Onboard extends React.Component {
             useWebKit={true}
           />
         </View>
+        <Modal
+          animationType={"fade"}
+          transparent={true}
+          visible={this.state.credit_Visible}
+          onRequestClose={() => {}}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => this.toggleModal(false)}
+            >
+              <View style={{ flex: 1 }} />
+            </TouchableOpacity>
+            <View style={styles.modal}>
+              <Image source={ballon_image} style={{ width: 80, height: 80 }} />
+              <Text style={{ fontWeight: "700", fontSize: 20 }}>
+                We love you.
+              </Text>
+              <Text style={{ textAlign: "center" }}>
+                So we've credited you membership for 12 months.
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  this.toggleModal(false);
+                }}
+                style={{
+                  backgroundColor: colors.yellow,
+                  width: 100,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderColor: colors.grey,
+                  borderWidth: 1
+                }}
+              >
+                <Text style={styles.text}>Amazing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
   onEventHandler = data => {
-    const { username, phone, DOB, renter_owner } = this.state;
+    const { firstname, phone, DOB, renter_owner, credit_members } = this.state;
     bamboo.play();
     console.log("data", data);
     if (data != "bamboo") {
       const obj = JSON.parse(data);
       console.log(obj);
       if (obj.onboardingFinished) {
-        const name_array = username.split(" ");
-        const firstname = name_array[0];
-        const lastname = name_array[1];
-
-        const basicInfo = {
+        let basicInfo = {
           firstname: firstname,
-          lastname: lastname,
           phonenumber: phone,
           dob: DOB,
           renter_owner: renter_owner,
           groupId: "",
           tokens: 5
         };
+        if (credit_members.includes(phone)) {
+          this.toggleModal(true);
+          basicInfo.active = true;
+          basicInfo.packages = [{ caption: "Membership Pack", price: 9.99 }];
+        }
         Firebase.signup(basicInfo)
           .then(res => {
             console.log("uid", res.id);
@@ -133,6 +183,7 @@ class Onboard extends React.Component {
             this.props.dispatch(saveUID(res.id));
             AsyncStorage.setItem("profile", JSON.stringify(basicInfo));
             AsyncStorage.setItem("uid", res.id);
+
             setTimeout(() => this.props.navigation.navigate("Main"), 100);
           })
           .catch(err => {
@@ -216,7 +267,8 @@ const styles = StyleSheet.create({
     height: Metrics.screenHeight,
     paddingTop: 20,
     marginTop: 100,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
+    overflow: "hidden"
   },
   subcontainer: {
     width: "70%",
@@ -224,6 +276,20 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  modal: {
+    position: "absolute",
+    left: "10%",
+    top: "20%",
+    width: "80%",
+    height: "30%",
+    justifyContent: "space-around",
+    alignItems: "center",
+    borderColor: colors.grey,
+    borderWidth: 1,
+    borderRadius: 20,
+    backgroundColor: colors.lightgrey,
+    padding: 10
   }
 });
 function mapStateToProps(state) {

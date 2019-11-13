@@ -16,7 +16,7 @@ class MemberItem extends React.Component {
     };
   }
   render() {
-    const { onAdd, username } = this.props;
+    const { onAdd, username, phonenumber } = this.props;
     const { avatar } = this.state;
     return (
       <View
@@ -59,6 +59,7 @@ class MemberItem extends React.Component {
           }}
         >
           <Text style={{ fontSize: 20 }}>{username}</Text>
+          <Text style={{ fontSize: 20 }}>{phonenumber}</Text>
         </View>
       </View>
     );

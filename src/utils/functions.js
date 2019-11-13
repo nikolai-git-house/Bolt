@@ -1,4 +1,54 @@
 import { AsyncStorage } from "react-native";
+
+const HOME_TICKETS = [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "19",
+  "39"
+];
+var getMonth = month => {
+  switch (month) {
+    case "01":
+      return "January";
+    case "02":
+      return "February";
+    case "03":
+      return "March";
+    case "04":
+      return "April";
+    case "05":
+      return "May";
+    case "06":
+      return "June";
+    case "07":
+      return "July";
+    case "08":
+      return "August";
+    case "09":
+      return "September";
+    case "10":
+      return "October";
+    case "11":
+      return "November";
+    case "12":
+      return "December";
+    default:
+      return "January";
+  }
+};
 function addZero(i) {
   if (i < 10) {
     i = "0" + i;
@@ -147,3 +197,19 @@ export function filterArrayByKey(arr, key) {
   }, []);
   return a;
 }
+
+export const isTicketforLandlord = ticket_id => {
+  let ticket_str = "" + ticket_id;
+  let ar = ticket_str.split(".");
+  let prefix = ar[0];
+  if (HOME_TICKETS.includes(prefix)) return true;
+  else return false;
+};
+export const getStringfromSeconds = function(time) {
+  var t = new Date(parseInt(time));
+  var dd = String(t.getDate()).padStart(2, "0");
+  var mm = String(t.getMonth() + 1).padStart(2, "0"); //January is 0!
+  var month = getMonth(mm);
+  t = dd + "th " + month;
+  return t;
+};

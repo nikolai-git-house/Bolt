@@ -145,9 +145,9 @@ const styles = StyleSheet.create({
   bubble: {
     alignSelf: "flex-start",
     maxWidth: "80%",
-    padding: 16,
+    padding: 10,
     marginRight: 10,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: "#fff",
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
@@ -160,14 +160,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: "#555",
     fontSize: 16,
-    marginLeft: 5
+    marginLeft: 5,
+    marginBottom: 0
   },
   userbubble: {
     alignSelf: "flex-start",
     maxWidth: "80%",
-    padding: 16,
+    padding: 10,
     marginRight: 0,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: colors.yellow,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
@@ -180,7 +181,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.darkblue,
     fontSize: 17,
-    marginLeft: 5
+    marginLeft: 5,
+    marginBottom: 0
   },
   avatar: {
     width: 40,
