@@ -1,27 +1,26 @@
 rootProject.name = 'pin'
-include ':react-native-onesignal'
-project(':react-native-onesignal').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-onesignal/android')
+include ':rn-fetch-blob'
+project(':rn-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/rn-fetch-blob/android')
+include ':fidel-react-native'
+project(':fidel-react-native').projectDir = new File(rootProject.projectDir, '../node_modules/fidel-react-native/android')
 include ':react-native-sound'
 project(':react-native-sound').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sound/android')
-include ':react-native-vector-icons'
-project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
-include ':react-native-sound'
-project(':react-native-sound').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sound/android')
-include ':react-native-onesignal'
-project(':react-native-onesignal').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-onesignal/android')
 include ':react-native-message-bubble'
 project(':react-native-message-bubble').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-message-bubble/android')
-include ':react-native-image-resizer'
-project(':react-native-image-resizer').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-resizer/android')
-include ':react-native-image-picker'
-project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
-include ':react-native-image-base64'
-project(':react-native-image-base64').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-base64/android')
-include ':react-native-fetch-blob'
-project(':react-native-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fetch-blob/android')
-include ':react-native-gesture-handler'
-project(':react-native-gesture-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gesture-handler/android')
 include ':react-native-firebase'
 project(':react-native-firebase').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-firebase/android')
-
+include(':react-native-gesture-handler')
+project(':react-native-gesture-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gesture-handler/android')
+include(':react-native-image-picker')
+project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
+include(':react-native-image-resizer')
+project(':react-native-image-resizer').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-resizer/android')
+include(':react-native-reanimated')
+project(':react-native-reanimated').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-reanimated/android')
+include(':react-native-screens')
+project(':react-native-screens').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-screens/android')
+include ':react-native-vector-icons'
+project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
+include ':react-native-webview'
+project(':react-native-webview').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-webview/android')
 include ':app'

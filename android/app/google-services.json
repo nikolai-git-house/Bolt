@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:922343831809:android:cac3517c4e5b60cb",
+        "mobilesdk_app_id": "1:922343831809:android:9e4499c852c5822a4c4300",
         "android_client_info": {
-          "package_name": "com.pin.boltbot"
+          "package_name": "com.pin.ecosystem"
         }
       },
       "oauth_client": [
@@ -32,11 +32,10 @@
               "client_type": 3
             },
             {
-              "client_id": "922343831809-drfra1qi6118g3ptveopkndol32ulmaa.apps.googleusercontent.com",
+              "client_id": "922343831809-brdffrl42ff1crfn4lqkurtfit3o10ei.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "pinbolt.com.app",
-                "app_store_id": "1447256534"
+                "bundle_id": "ecosystem.com.app"
               }
             }
           ]
