@@ -1,18 +1,18 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   Platform,
   View,
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Fragment
-} from "react-native";
-import Carousel, { Pagination } from "react-native-snap-carousel";
-import colors from "../theme/Colors";
-import Firebase from "../firebasehelper";
-import { sliderWidth, itemWidth } from "../theme/Styles";
-import PackCard from "../components/PackCard";
-const IS_ANDROID = Platform.OS === "android";
+  Fragment,
+} from 'react-native';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
+import colors from '../theme/Colors';
+import Firebase from '../firebasehelper';
+import {sliderWidth, itemWidth} from '../theme/Styles';
+import PackCard from '../components/PackCard';
+const IS_ANDROID = Platform.OS === 'android';
 const SLIDER_1_FIRST_ITEM = 0;
 let all_packages = [];
 
@@ -22,61 +22,70 @@ export default class PackCarousel extends React.Component {
     this.state = {
       activeSlide: SLIDER_1_FIRST_ITEM,
       packages: [],
-      pkgloading: false
+      pkgloading: false,
     };
   }
-  _renderItem({ item, index }) {
+  _renderItem({item, index}) {
     return <PackCard data={item} key={index} />;
   }
   componentWillReceiveProps(nextProps) {
-    const { fromOption_packageRequired } = nextProps;
-    console.log("fromOption_packageRequired", fromOption_packageRequired);
-    this.setState({ fromOption_packageRequired });
-    const { packages } = this.state;
+    const {fromOption_packageRequired} = nextProps;
+    console.log('fromOption_packageRequired', fromOption_packageRequired);
+    this.setState({fromOption_packageRequired});
+    const {packages} = this.state;
     if (packages) {
       packages.forEach((item, index) => {
         if (fromOption_packageRequired)
           if (item.caption === fromOption_packageRequired[0])
-            this.setState({ activeSlide: index });
+            this.setState({activeSlide: index});
       });
     }
   }
   async componentDidMount() {
-    const { renter_owner, onLoad, fromBoltOn } = this.props;
-    this.setState({ pkgloading: true });
-    res = await Firebase.getPackagesData();
-    const { fromOption_packageRequired } = this.state;
+    const {renter_owner, onLoad, fromBoltOn} = this.props;
+    this.setState({pkgloading: true});
+    let res = await Firebase.getBoltPackages();
     onLoad();
-    this.setState({ pkgloading: false });
-    for (var i in res) all_packages.push(res[i]);
+    this.setState({pkgloading: false});
+    for (var i in res) {
+      const {visibility} = res[i];
+      if (visibility) all_packages.push(res[i]);
+    }
+    console.log('all_packages', all_packages);
     let packages = [];
     for (var i in all_packages) {
       if (all_packages[i].for === 0 || all_packages[i].for === renter_owner) {
         const order = parseInt(all_packages[i].order);
         if (fromBoltOn) {
-          if (all_packages[i].caption !== "Membership Pack")
+          if (all_packages[i].caption !== 'Membership Pack')
             packages[order] = all_packages[i];
         } else {
           packages[order] = all_packages[i];
         }
       }
     }
-    let temp = [];
-    let pos = 0;
-    packages.forEach((item, index) => {
-      if (fromOption_packageRequired)
-        if (item.caption === fromOption_packageRequired[0]) pos = index;
-      temp.push(item);
+    let array = [];
+    packages.forEach(item => {
+      if (item) {
+        array.push(item);
+      }
     });
-    this.setState({ packages: temp });
-    console.log("packages", temp);
-    setTimeout(() => {
-      this.setState({ activeSlide: pos });
-    }, 100);
+    console.log('packages', array);
+    // let temp = [];
+    // let pos = 0;
+    // packages.forEach((item, index) => {
+    //   if (fromOption_packageRequired)
+    //     if (item.caption === fromOption_packageRequired[0]) pos = index;
+    //   temp.push(item);
+    // });
+    this.setState({packages: array});
+    // setTimeout(() => {
+    //   this.setState({activeSlide: pos});
+    // }, 100);
   }
   get pagination() {
-    const { activeSlide, packages } = this.state;
-    const { getActive } = this.props;
+    const {activeSlide, packages} = this.state;
+    const {getActive} = this.props;
     if (packages) {
       const isgroup = packages[activeSlide].isgroup;
       const price = packages[activeSlide].price;
@@ -88,7 +97,7 @@ export default class PackCarousel extends React.Component {
       <Pagination
         dotsLength={packages.length}
         activeDotIndex={activeSlide}
-        containerStyle={{ backgroundColor: "transparent", paddingVertical: 10 }}
+        containerStyle={{backgroundColor: 'transparent', paddingVertical: 10}}
         dotStyle={{
           width: 10,
           height: 10,
@@ -96,12 +105,12 @@ export default class PackCarousel extends React.Component {
           marginHorizontal: 8,
           borderWidth: 1,
           borderColor: colors.darkblue,
-          backgroundColor: colors.yellow
+          backgroundColor: colors.yellow,
         }}
         inactiveDotStyle={{
           backgroundColor: colors.grey,
           borderWidth: 1,
-          borderColor: colors.darkblue
+          borderColor: colors.darkblue,
         }}
         inactiveDotOpacity={0.4}
         inactiveDotScale={0.6}
@@ -110,9 +119,9 @@ export default class PackCarousel extends React.Component {
   }
 
   render() {
-    const { activeSlide, packages, pkgloading } = this.state;
+    const {activeSlide, packages, pkgloading} = this.state;
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{flex: 1}}>
         {pkgloading && (
           <ActivityIndicator size="large" color={colors.darkblue} />
         )}
@@ -123,7 +132,7 @@ export default class PackCarousel extends React.Component {
             removeClippedSubviews={false}
             data={packages}
             renderItem={this._renderItem}
-            onSnapToItem={index => this.setState({ activeSlide: index })}
+            onSnapToItem={index => this.setState({activeSlide: index})}
             sliderWidth={sliderWidth}
             itemWidth={itemWidth}
             firstItem={activeSlide}

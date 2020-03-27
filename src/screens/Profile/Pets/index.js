@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   StyleSheet,
   Text,
@@ -18,25 +18,25 @@ import {
   TouchableWithoutFeedback,
   TouchableHighlight,
   AsyncStorage,
-  WebView
-} from "react-native";
-import { connect } from "react-redux";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Sound from "react-native-sound";
-import ImagePicker from "react-native-image-picker";
-import colors from "../../../theme/Colors";
-import CheckDiv from "../../../components/CheckDiv";
-import Twocheckbox from "../../../components/Twocheckbox";
-import Firebase from "../../../firebasehelper";
-import { savePet } from "../../../Redux/actions/index";
-import Metrics from "../../../theme/Metrics";
+} from 'react-native';
+import WebView from 'react-native-webview';
+import {connect} from 'react-redux';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Sound from 'react-native-sound';
+import ImagePicker from 'react-native-image-picker';
+import colors from '../../../theme/Colors';
+import CheckDiv from '../../../components/CheckDiv';
+import Twocheckbox from '../../../components/Twocheckbox';
+import Firebase from '../../../firebasehelper';
+import {savePet} from '../../../Redux/actions/index';
+import Metrics from '../../../theme/Metrics';
 
-const ok_img = require("../../../assets/success.png");
-const error_img = require("../../../assets/popup/error.png");
+const ok_img = require('../../../assets/success.png');
+const error_img = require('../../../assets/popup/error.png');
 
-var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+var bamboo = new Sound('bamboo.mp3', Sound.MAIN_BUNDLE, error => {
   if (error) {
-    console.log("failed to load the sound", error);
+    console.log('failed to load the sound', error);
     return;
   }
 });
@@ -46,41 +46,41 @@ class PetsProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ImageSource: require("../../../assets/Pets/avatar.jpeg"),
-      petpack: "Bolt-on",
+      ImageSource: require('../../../assets/Pets/avatar.jpeg'),
+      petpack: 'Bolt-on',
       petprofile: {
-        pet_profile_checked: [false, false, false, false]
+        pet_profile_checked: [false, false, false, false],
       },
       saving: false,
       errorVisible: false,
-      error_msg: "",
+      error_msg: '',
       editable: false,
-      button_txt: "Edit Profile Information",
-      webview: true
+      button_txt: 'Edit Profile Information',
+      webview: true,
     };
   }
   componentDidMount() {
-    const { pet } = this.props;
-    console.log("pet", pet);
+    const {pet} = this.props;
+    console.log('pet', pet);
     if (pet && Object.keys(pet).length !== 0) {
-      this.setState({ petprofile: pet });
-      this.setState({ webview: false });
+      this.setState({petprofile: pet});
+      this.setState({webview: false});
       let keyboardScrollView = this.refs.KeyboardAwareScrollView;
       if (keyboardScrollView) keyboardScrollView.update();
     } else {
-      this.setState({ webview: true });
+      this.setState({webview: true});
     }
   }
   onLoadFinished = () => {
     if (this.webview) {
-      console.log("posted message");
-      this.webview.postMessage("pet_botMessages");
+      console.log('posted message');
+      this.webview.postMessage('pet_botMessages');
     }
   };
   selectPhotoTapped() {
     let thisElement = this;
     const options = {
-      mediaType: "photo", // 'photo' or 'video'
+      mediaType: 'photo', // 'photo' or 'video'
       allowsEditing: true, // Built in functionality to resize/reposition the image after selection
 
       quality: 1.0,
@@ -88,75 +88,75 @@ class PetsProfile extends React.Component {
       maxHeight: 500,
       storageOptions: {
         skipBackup: true,
-        path: "images",
+        path: 'images',
         cameraRoll: true,
-        waitUntilSaved: true
-      }
+        waitUntilSaved: true,
+      },
     };
 
     ImagePicker.showImagePicker(options, response => {
-      console.log("Response = ", response);
+      console.log('Response = ', response);
 
       if (response.didCancel) {
-        console.log("User cancelled photo picker");
+        console.log('User cancelled photo picker');
       } else if (response.error) {
-        console.log("ImagePicker Error: ", response.error);
+        console.log('ImagePicker Error: ', response.error);
       } else if (response.customButton) {
-        console.log("User tapped custom button: ", response.customButton);
+        console.log('User tapped custom button: ', response.customButton);
       } else {
         let imgData = {
           image:
-            Platform.OS === "android"
+            Platform.OS === 'android'
               ? response.uri
-              : response.uri.replace("file://", ""),
+              : response.uri.replace('file://', ''),
           filePath: response.path,
-          fileName: response.fileName
+          fileName: response.fileName,
         };
       }
-      let source = { uri: "data:image/jpeg;base64," + response.data };
-      console.log("imgSource", source);
+      let source = {uri: 'data:image/jpeg;base64,' + response.data};
+      console.log('imgSource', source);
       //let source = { uri: response.uri };
       thisElement.setState({
-        ImageSource: source
+        ImageSource: source,
       });
     });
   }
   isPetPackActive() {
-    const { basic } = this.props;
+    const {basic} = this.props;
     const packages = basic.packages;
     let result = false;
     if (packages) {
       packages.map((item, index) => {
-        if (item.caption === "Pet Friendly Renting Pack") result = true;
+        if (item.caption === 'Pet Friendly Renting Pack') result = true;
       });
     }
-    console.log("isPetPackActive", result);
+    console.log('isPetPackActive', result);
     return result;
   }
   save = () => {
-    const { uid } = this.props;
-    let { petprofile, editable } = this.state;
+    const {uid} = this.props;
+    let {petprofile, editable} = this.state;
     if (editable) {
-      this.setState({ saving: true });
-      petprofile["uid"] = uid;
+      this.setState({saving: true});
+      petprofile['uid'] = uid;
       Firebase.isActive(uid).then(res => {
         if (res) {
           Firebase.pet_signup(petprofile)
             .then(res => {
               this.props.dispatch(savePet(petprofile));
-              AsyncStorage.setItem("petprofile", JSON.stringify(petprofile));
-              console.log("saving", "false");
-              this.setState({ saving: false });
+              AsyncStorage.setItem('petprofile', JSON.stringify(petprofile));
+              console.log('saving', 'false');
+              this.setState({saving: false});
               this.toggleEdit();
             })
             .catch(err => {
               alert(err);
             });
         } else {
-          this.setState({ saving: false });
+          this.setState({saving: false});
           this.setState({
             error_msg:
-              "You are not active member. Please activate your profile."
+              'You are not active member. Please activate your profile.',
           });
           this.toggleError();
         }
@@ -166,45 +166,45 @@ class PetsProfile extends React.Component {
     }
   };
   toggleError = visible => {
-    this.setState({ errorVisible: visible });
+    this.setState({errorVisible: visible});
   };
   navigateTo = (page, props) => {
     this.props.navigation.navigate(page, props);
   };
   onActivate_PetPack = () => {
-    this.navigateTo("MainList", {
-      ongoBack: () => console.log("Will go back from nextComponent"),
-      packageRequired: ["Pet Friendly Renting Pack"]
+    this.navigateTo('MainList', {
+      ongoBack: () => console.log('Will go back from nextComponent'),
+      packageRequired: ['Pet Friendly Renting Pack'],
     });
   };
 
   onEventHandler = data => {
-    const { petprofile } = this.state;
-    const { uid } = this.props;
+    const {petprofile} = this.state;
+    const {uid} = this.props;
     let temp = petprofile;
     bamboo.play();
-    if (data != "bamboo") {
+    if (data != 'bamboo') {
       const obj = JSON.parse(data);
       const key = Object.keys(obj)[0];
-      console.log("key", key);
-      console.log("value", obj[key]);
+      console.log('key', key);
+      console.log('value', obj[key]);
       temp[key] = obj[key];
-      this.setState({ petprofile: temp });
+      this.setState({petprofile: temp});
 
       console.log(obj);
       if (obj.onboardingFinished) {
-        temp["uid"] = uid;
-        this.setState({ petprofile: temp });
+        temp['uid'] = uid;
+        this.setState({petprofile: temp});
         Firebase.pet_signup(temp)
           .then(res => {
             this.props.dispatch(savePet(temp));
-            AsyncStorage.setItem("petprofile", JSON.stringify(temp));
+            AsyncStorage.setItem('petprofile', JSON.stringify(temp));
           })
           .catch(err => {
             alert(err);
           });
-        setTimeout(() => this.setState({ webview: false }), 1000);
-        console.log("petprofile", petprofile);
+        setTimeout(() => this.setState({webview: false}), 1000);
+        console.log('petprofile', petprofile);
       } else this.setState(obj);
     }
   };
@@ -217,19 +217,19 @@ class PetsProfile extends React.Component {
       error_msg,
       editable,
       button_txt,
-      webview
+      webview,
     } = this.state;
-    console.log("petprofile", petprofile);
+    console.log('petprofile', petprofile);
     return (
       <View style={styles.maincontainer}>
         {webview && (
           <WebView
             ref={r => (this.webview = r)}
-            originWhitelist={["*"]}
+            originWhitelist={['*']}
             source={
-              Platform.OS === "ios"
-                ? { uri: "./external/onboarding/index.html" }
-                : { uri: "file:///android_asset/onboarding/index.html" }
+              Platform.OS === 'ios'
+                ? {uri: './external/onboarding/index.html'}
+                : {uri: 'file:///android_asset/onboarding/index.html'}
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -243,39 +243,35 @@ class PetsProfile extends React.Component {
         )}
         {!webview && (
           <KeyboardAwareScrollView
-            style={{ width: "100%", height: "100%" }}
-            contentContainerStyle={{ alignItems: "center" }}
+            style={{width: '100%', height: '100%'}}
+            contentContainerStyle={{alignItems: 'center'}}
             ref="KeyboardAwareScrollView"
-            extraScrollHeight={100}
-          >
+            extraScrollHeight={100}>
             <Text
               style={{
-                textAlign: "center",
-                fontFamily: "Gothic A1",
+                textAlign: 'center',
+                fontFamily: 'Gothic A1',
                 fontSize: 20,
-                fontWeight: "700",
-                marginBottom: 0
-              }}
-            >
+                fontWeight: '700',
+                marginBottom: 0,
+              }}>
               My Pet ID
             </Text>
             <View
               style={{
-                width: "100%",
-                alignItems: "center",
-                paddingBottom: 50
-              }}
-            >
+                width: '100%',
+                alignItems: 'center',
+                paddingBottom: 50,
+              }}>
               <TouchableOpacity
                 onPress={this.selectPhotoTapped.bind(this)}
-                style={styles.avatar}
-              >
+                style={styles.avatar}>
                 <ImageBackground
                   style={styles.imageContainer}
                   source={ImageSource}
                 />
               </TouchableOpacity>
-              <View style={[styles.Row, { marginBottom: 20 }]}>
+              <View style={[styles.Row, {marginBottom: 20}]}>
                 <View style={styles.PetsContainer}>
                   <Text style={styles.Title}>{petprofile.pet_name}</Text>
                   <View style={styles.Row}>
@@ -298,54 +294,50 @@ class PetsProfile extends React.Component {
               </View>
               <View
                 style={{
-                  width: "90%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  width: '90%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   padding: 10,
                   marginBottom: 10,
-                  backgroundColor: colors.white
-                }}
-              >
+                  backgroundColor: colors.white,
+                }}>
                 <View
                   style={{
-                    width: "100%",
+                    width: '100%',
                     height: 50,
                     marginBottom: 5,
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center"
-                  }}
-                >
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}>
                   <View
                     style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      width: 150
-                    }}
-                  >
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      width: 150,
+                    }}>
                     <Image
                       style={{
                         width: 40,
                         height: 40,
                         marginTop: 5,
                         marginLeft: 10,
-                        marginRight: 10
+                        marginRight: 10,
                       }}
-                      source={require("../../../assets/pet.png")}
+                      source={require('../../../assets/pet.png')}
                     />
-                    <Text style={{ fontSize: 16 }}>Pet Pack</Text>
+                    <Text style={{fontSize: 16}}>Pet Pack</Text>
                   </View>
                   <TouchableOpacity
                     style={
                       !this.isPetPackActive() ? styles.CtoA : styles.CtoA_Clk
                     }
                     onPress={this.onActivate_PetPack}
-                    disabled={this.isPetPackActive()}
-                  >
-                    <Text style={{ fontSize: 14, color: colors.darkblue }}>
+                    disabled={this.isPetPackActive()}>
+                    <Text style={{fontSize: 14, color: colors.darkblue}}>
                       Activate
                     </Text>
                   </TouchableOpacity>
@@ -387,139 +379,134 @@ class PetsProfile extends React.Component {
 const styles = StyleSheet.create({
   Title: {
     fontSize: 20,
-    fontFamily: "Gothic A1",
+    fontFamily: 'Gothic A1',
     color: colors.darkblue,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 10
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 10,
   },
-  subTitle: { fontSize: 15, color: colors.darkblue },
+  subTitle: {fontSize: 15, color: colors.darkblue},
   CallAction: {
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '80%',
+    alignItems: 'center',
+    justifyContent: 'center',
     height: 40,
     borderRadius: 10,
-    backgroundColor: colors.darkblue
+    backgroundColor: colors.darkblue,
   },
   CtoA: {
     borderRadius: 20,
-    borderRadius: 20,
     width: 100,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 50,
     backgroundColor: colors.yellow,
-    shadowOffset: { height: 1, width: 1 },
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   CtoA_Clk: {
     borderRadius: 20,
-    borderRadius: 20,
     width: 100,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 50,
-    backgroundColor: "rgba(255, 255, 0, 0.3)",
-    shadowOffset: { height: 1, width: 1 },
+    backgroundColor: 'rgba(255, 255, 0, 0.3)',
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   avatar: {
-    shadowOffset: { height: 1, width: 1 },
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   Row: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    width: "80%",
-    justifyContent: "space-around",
-    marginTop: 10
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '80%',
+    justifyContent: 'space-around',
+    marginTop: 10,
   },
 
   Column: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center"
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   checkedItem: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 5
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 5,
   },
   PetsContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center"
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   maincontainer: {
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
-    backgroundColor: "transparent",
-    fontFamily: "Gothic A1"
+    backgroundColor: 'transparent',
+    fontFamily: 'Gothic A1',
   },
   inputGroup: {
-    width: "60%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 10
+    width: '60%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 10,
   },
   input: {
     fontSize: 18,
     borderWidth: 0,
     paddingLeft: 5,
-    paddingRight: 5
+    paddingRight: 5,
   },
   imageContainer: {
     width: 80,
     height: 80,
     borderRadius: 80,
-    overflow: "hidden",
-    marginBottom: 10
+    overflow: 'hidden',
+    marginBottom: 10,
   },
   modal: {
-    position: "absolute",
-    left: "10%",
-    top: "20%",
-    width: "80%",
-    height: "35%",
-    justifyContent: "space-around",
-    alignItems: "center",
+    position: 'absolute',
+    left: '10%',
+    top: '20%',
+    width: '80%',
+    height: '35%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     borderColor: colors.grey,
     borderWidth: 1,
     borderRadius: 20,
     backgroundColor: colors.lightgrey,
-    padding: 10
-  }
+    padding: 10,
+  },
 });
 function mapDispatchToProps(dispatch) {
   return {
-    dispatch
+    dispatch,
   };
 }
 function mapStateToProps(state) {
   return {
     basic: state.basic,
     uid: state.uid,
-    pet: state.pet
+    pet: state.pet,
   };
 }
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(PetsProfile);
+export default connect(mapStateToProps, mapDispatchToProps)(PetsProfile);

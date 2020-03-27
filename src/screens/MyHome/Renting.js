@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,21 +10,21 @@ import {
   AsyncStorage,
   Platform,
   TextInput,
-  WebView
-} from "react-native";
-import { connect } from "react-redux";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Firebase from "../../firebasehelper";
-import { saveRent } from "../../Redux/actions/index";
-import Sound from "react-native-sound";
-import colors from "../../theme/Colors";
-import StickItem from "../../components/StickItem";
-import { Metrics } from "../../theme";
-const error_img = require("../../assets/error.png");
+} from 'react-native';
+import WebView from 'react-native-webview';
+import {connect} from 'react-redux';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Firebase from '../../firebasehelper';
+import {saveRent} from '../../Redux/actions/index';
+import Sound from 'react-native-sound';
+import colors from '../../theme/Colors';
+import StickItem from '../../components/StickItem';
+import {Metrics} from '../../theme';
+const error_img = require('../../assets/error.png');
 
-var bamboo = new Sound("bamboo.mp3", Sound.MAIN_BUNDLE, error => {
+var bamboo = new Sound('bamboo.mp3', Sound.MAIN_BUNDLE, error => {
   if (error) {
-    console.log("failed to load the sound", error);
+    console.log('failed to load the sound', error);
     return;
   }
 });
@@ -34,76 +34,76 @@ class RentingProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ImageSource: require("../../assets/avatar.png"),
+      ImageSource: require('../../assets/avatar.png'),
       localUri: null,
       rentprofile: {},
       housemateprofile: {},
       rent_webview: false,
       housemate_webview: false,
-      rent_housemate: ""
+      rent_housemate: '',
     };
   }
   componentDidMount() {
-    this.setState({ rent_webview: false });
-    this.setState({ housemate_webview: false });
+    this.setState({rent_webview: false});
+    this.setState({housemate_webview: false});
   }
   navigateTo = page => {
     this.props.navigation.navigate(page);
   };
   onLoadFinished = () => {
     if (this.housemate_webview) {
-      console.log("posted message");
-      this.housemate_webview.postMessage("housemate_botMessages");
+      console.log('posted message');
+      this.housemate_webview.postMessage('housemate_botMessages');
     }
   };
   startRentingTest = () => {
-    this.setState({ rent_webview: true });
+    this.setState({rent_webview: true});
   };
   startHousemateTest = () => {
-    this.setState({ housemate_webview: true });
+    this.setState({housemate_webview: true});
   };
   onEventHandler = data => {
-    const { rentprofile, housemateprofile, rent_housemate } = this.state;
-    const { uid } = this.props;
+    const {rentprofile, housemateprofile, rent_housemate} = this.state;
+    const {uid} = this.props;
     bamboo.play();
-    console.log("rent_housemate", rent_housemate);
-    if (data != "bamboo") {
+    console.log('rent_housemate', rent_housemate);
+    if (data != 'bamboo') {
       const obj = JSON.parse(data);
       const key = Object.keys(obj)[0];
-      console.log("key", key);
-      if (rent_housemate === "") {
+      console.log('key', key);
+      if (rent_housemate === '') {
         this.setState({
-          rent_housemate: key === "approve" ? "housemate" : "rent"
+          rent_housemate: key === 'approve' ? 'housemate' : 'rent',
         });
       }
-      if (rent_housemate === "rent") {
+      if (rent_housemate === 'rent') {
         let temp = rentprofile;
         temp[key] = obj[key];
-        this.setState({ rentprofile: temp });
+        this.setState({rentprofile: temp});
 
         if (obj.onboardingFinished) {
-          temp["uid"] = uid;
-          this.setState({ rentprofile: temp });
+          temp['uid'] = uid;
+          this.setState({rentprofile: temp});
           Firebase.rent_signup(temp)
             .then(res => {
               this.props.dispatch(saveRent(temp));
-              AsyncStorage.setItem("rentprofile", JSON.stringify(temp));
+              AsyncStorage.setItem('rentprofile', JSON.stringify(temp));
             })
             .catch(err => {
               alert(err);
             });
-          setTimeout(() => this.setState({ rent_webview: false }), 1000);
+          setTimeout(() => this.setState({rent_webview: false}), 1000);
         } else this.setState(obj);
-        console.log("rentprofile", rentprofile);
+        console.log('rentprofile', rentprofile);
       }
-      if (rent_housemate === "housemate") {
+      if (rent_housemate === 'housemate') {
         let temp = housemateprofile;
         temp[key] = obj[key];
-        this.setState({ housemateprofile: temp });
+        this.setState({housemateprofile: temp});
 
         if (obj.onboardingFinished) {
-          temp["uid"] = uid;
-          this.setState({ housemateprofile: temp });
+          temp['uid'] = uid;
+          this.setState({housemateprofile: temp});
           // Firebase.rent_signup(temp)
           //   .then(res => {
           //     this.props.dispatch(saveRent(temp));
@@ -112,25 +112,25 @@ class RentingProfile extends React.Component {
           //   .catch(err => {
           //     alert(err);
           //   });
-          setTimeout(() => this.setState({ housemate_webview: false }), 1000);
+          setTimeout(() => this.setState({housemate_webview: false}), 1000);
         } else this.setState(obj);
-        console.log("housemateprofile", housemateprofile);
+        console.log('housemateprofile', housemateprofile);
       }
     }
   };
   render() {
-    const { basic } = this.props;
-    const { rent_webview, housemate_webview } = this.state;
+    const {basic} = this.props;
+    const {rent_webview, housemate_webview} = this.state;
     return (
       <View style={styles.maincontainer}>
         {rent_webview && (
           <WebView
             ref={r => (this.rent_webview = r)}
-            originWhitelist={["*"]}
+            originWhitelist={['*']}
             source={
-              Platform.OS === "ios"
-                ? { uri: "./external/rent_profile/index.html" }
-                : { uri: "file:///android_asset/rent_profile/index.html" }
+              Platform.OS === 'ios'
+                ? {uri: './external/rent_profile/index.html'}
+                : {uri: 'file:///android_asset/rent_profile/index.html'}
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -144,11 +144,11 @@ class RentingProfile extends React.Component {
         {housemate_webview && (
           <WebView
             ref={r => (this.housemate_webview = r)}
-            originWhitelist={["*"]}
+            originWhitelist={['*']}
             source={
-              Platform.OS === "ios"
-                ? { uri: "./external/rent_profile/index.html" }
-                : require("../../webview/rent_profile/index.html")
+              Platform.OS === 'ios'
+                ? {uri: './external/rent_profile/index.html'}
+                : require('../../webview/rent_profile/index.html')
             }
             onMessage={event => this.onEventHandler(event.nativeEvent.data)}
             startInLoadingState
@@ -161,66 +161,62 @@ class RentingProfile extends React.Component {
           />
         )}
         {!rent_webview && !housemate_webview && (
-          <KeyboardAwareScrollView style={{ width: "100%", height: "100%" }}>
+          <KeyboardAwareScrollView style={{width: '100%', height: '100%'}}>
             <View
               style={{
-                width: "100%",
-                height: "100%",
-                alignItems: "center",
-                backgroundColor: colors.white
-              }}
-            >
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                backgroundColor: colors.white,
+              }}>
               <Text
                 style={{
-                  textAlign: "center",
-                  fontFamily: "Gothic A1",
+                  textAlign: 'center',
+                  fontFamily: 'Gothic A1',
                   fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 10
-                }}
-              >
+                  fontWeight: '700',
+                  marginBottom: 10,
+                }}>
                 Renting Reference
               </Text>
               <View
                 style={{
-                  width: "90%",
+                  width: '90%',
                   height: 180,
                   paddingLeft: 10,
                   paddingRight: 10,
                   paddingTop: 10,
-                  paddingBottom: 10
-                }}
-              >
+                  paddingBottom: 10,
+                }}>
                 <StickItem
                   value="Employment"
                   checked={false}
-                  img={require("../../assets/renting/Employment_.png")}
+                  img={require('../../assets/renting/Employment_.png')}
                 />
                 <StickItem
                   value="Right to Rent"
                   checked={false}
-                  img={require("../../assets/renting/RighttoRent.png")}
+                  img={require('../../assets/renting/RighttoRent.png')}
                 />
                 <StickItem
                   value="Credit & Affordability"
                   checked={false}
-                  img={require("../../assets/renting/Credit_Affordability_.png")}
+                  img={require('../../assets/renting/Credit_Affordability_.png')}
                 />
                 <StickItem
                   value="Rental History"
                   checked={false}
-                  img={require("../../assets/renting/RentalHistory.png")}
+                  img={require('../../assets/renting/RentalHistory.png')}
                 />
                 <StickItem
                   value="Pets"
                   checked={false}
-                  img={require("../../assets/renting/Pets.png")}
+                  img={require('../../assets/renting/Pets.png')}
                 />
               </View>
               <TouchableOpacity
                 style={styles.PrimaryCallAction}
-                onPress={this.startRentingTest}
-              >
+                onPress={this.startRentingTest}>
                 <Text>Take the test</Text>
               </TouchableOpacity>
             </View>
@@ -231,101 +227,99 @@ class RentingProfile extends React.Component {
   }
 }
 const styles = StyleSheet.create({
-  Title: { fontSize: 35, fontFamily: "Gothic A1" },
+  Title: {fontSize: 35, fontFamily: 'Gothic A1'},
   CtoA: {
-    borderRadius: 20,
     borderRadius: 20,
     width: 100,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 50,
     backgroundColor: colors.yellow,
-    shadowOffset: { height: 1, width: 1 },
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   CtoA_Clk: {
     borderRadius: 20,
-    borderRadius: 20,
     width: 100,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 50,
-    backgroundColor: "rgba(255, 255, 0, 0.3)",
-    shadowOffset: { height: 1, width: 1 },
+    backgroundColor: 'rgba(255, 255, 0, 0.3)',
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   CallAction: {
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '80%',
+    alignItems: 'center',
+    justifyContent: 'center',
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#152439",
-    shadowOffset: { height: 1, width: 1 },
+    backgroundColor: '#152439',
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   PrimaryCallAction: {
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '80%',
+    alignItems: 'center',
+    justifyContent: 'center',
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#faff87",
-    shadowOffset: { height: 1, width: 1 },
+    backgroundColor: '#faff87',
+    shadowOffset: {height: 1, width: 1},
     shadowColor: colors.darkblue,
     shadowOpacity: 0.2,
-    elevation: 3
+    elevation: 3,
   },
   iconstyle: {
-    color: "#9c9ebf"
+    color: '#9c9ebf',
   },
   textstyle: {
-    fontFamily: "Gothic A1",
+    fontFamily: 'Gothic A1',
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#212121",
+    fontWeight: 'bold',
+    color: '#212121',
     paddingBottom: 3,
-    paddingLeft: 10
+    paddingLeft: 10,
   },
   textFieldstyle: {
-    fontFamily: "Gothic A1",
+    fontFamily: 'Gothic A1',
     //fontWeight: "600",
-    alignSelf: "stretch"
+    alignSelf: 'stretch',
     //height: 44
   },
   imageContainer: {
     width: 60,
     height: 60,
     borderRadius: 40,
-    overflow: "hidden"
+    overflow: 'hidden',
   },
   toolbar: {
-    backgroundColor: "#484b89",
-    height: 55
+    backgroundColor: '#484b89',
+    height: 55,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(33, 33, 39, 0.7)",
+    backgroundColor: 'rgba(33, 33, 39, 0.7)',
     borderRadius: 50,
-    overflow: "hidden"
+    overflow: 'hidden',
   },
   Section: {
     flex: 1,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center"
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   Icon: {
-    padding: 10
+    padding: 10,
   },
   input: {
     flex: 1,
@@ -333,59 +327,56 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     paddingBottom: 5,
     paddingLeft: 5,
-    width: "100%",
+    width: '100%',
     fontSize: 18,
-    backgroundColor: "transparent",
-    color: "#424242"
+    backgroundColor: 'transparent',
+    color: '#424242',
   },
   fab: {
-    justifyContent: "center",
-    alignContent: "center",
+    justifyContent: 'center',
+    alignContent: 'center',
     ...Platform.select({
       ios: {
-        backgroundColor: "#ecd9fc",
+        backgroundColor: '#ecd9fc',
         height: 50,
         width: 70,
-        borderRadius: 10
+        borderRadius: 10,
       },
       android: {
-        backgroundColor: "#9513fe",
+        backgroundColor: '#9513fe',
         height: 60,
         width: 60,
-        borderRadius: 30
-      }
+        borderRadius: 30,
+      },
     }),
-    position: "absolute",
+    position: 'absolute',
     bottom: 20,
     right: 20,
     elevation: 3,
     zIndex: 5,
-    overflow: "hidden"
+    overflow: 'hidden',
   },
   tabStyle: {
-    backgroundColor: "#f0eff5"
+    backgroundColor: '#f0eff5',
   },
   maincontainer: {
     flex: 1,
     width: Metrics.screenWidth,
     height: Metrics.screenHeight,
     backgroundColor: colors.white,
-    fontFamily: "Gothic A1"
-  }
+    fontFamily: 'Gothic A1',
+  },
 });
 function mapDispatchToProps(dispatch) {
   return {
-    dispatch
+    dispatch,
   };
 }
 function mapStateToProps(state) {
   return {
     basic: state.basic,
     uid: state.uid,
-    home: state.home
+    home: state.home,
   };
 }
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RentingProfile);
+export default connect(mapStateToProps, mapDispatchToProps)(RentingProfile);

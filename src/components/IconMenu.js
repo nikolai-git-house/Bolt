@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   Platform,
   StyleSheet,
@@ -7,21 +7,21 @@ import {
   View,
   TouchableOpacity,
   Image,
-  TouchableWithoutFeedback
-} from "react-native";
-import colors from "../theme/Colors";
+  TouchableWithoutFeedback,
+} from 'react-native';
+import colors from '../theme/Colors';
 export default class IconMenu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
   Press = () => {
-    const { PressItem, data } = this.props;
+    const {PressItem, data, isTitleHidden} = this.props;
     PressItem(data);
   };
   render() {
-    const { data } = this.props;
-    const { title, img } = data;
+    const {data, isTitleHidden} = this.props;
+    const {title, img} = data;
 
     return (
       <TouchableOpacity onPress={this.Press}>
@@ -30,29 +30,28 @@ export default class IconMenu extends React.Component {
             width: 70,
             height: 70,
             borderRadius: 10,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
             backgroundColor: colors.white,
-            shadowOffset: { height: 2, width: 2 },
+            shadowOffset: {height: 2, width: 2},
             shadowColor: colors.darkblue,
             shadowOpacity: 0.2,
-            elevation: 3
-          }}
-        >
+            elevation: 3,
+          }}>
           <Image
             source={img}
             style={{
-              width: 46,
-              height: 46,
-              marginBottom: 10,
+              width: isTitleHidden ? 70 : 46,
+              height: isTitleHidden ? 70 : 46,
+              marginBottom: isTitleHidden ? 0 : 10,
               flex: 1,
-              resizeMode: "cover"
+              resizeMode: 'cover',
             }}
           />
-          <Text style={Styles.caption}>{title}</Text>
+          {!isTitleHidden && <Text style={Styles.caption}>{title}</Text>}
         </View>
       </TouchableOpacity>
     );
@@ -60,24 +59,24 @@ export default class IconMenu extends React.Component {
 }
 const Styles = StyleSheet.create({
   caption: {
-    fontFamily: "Gothic A1",
-    fontWeight: "600",
+    fontFamily: 'Gothic A1',
+    fontWeight: '600',
     fontSize: 10,
-    color: "black",
-    textAlign: "center"
+    color: 'black',
+    textAlign: 'center',
   },
   subCaption: {
-    fontFamily: "Gothic A1",
-    fontWeight: "500",
+    fontFamily: 'Gothic A1',
+    fontWeight: '500',
     fontSize: 15,
-    color: "black",
-    textAlign: "center"
+    color: 'black',
+    textAlign: 'center',
   },
   content: {
-    fontFamily: "Gothic A1",
+    fontFamily: 'Gothic A1',
     fontSize: 15,
-    fontWeight: "100",
+    fontWeight: '100',
     color: colors.darkblue,
-    textAlign: "center"
-  }
+    textAlign: 'center',
+  },
 });
