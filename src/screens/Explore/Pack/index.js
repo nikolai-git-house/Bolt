@@ -126,7 +126,7 @@ class Pack extends React.Component {
                 username_list += `${item.firstname} - £${final_price}\n `;
               });
               this.setState({
-                confirm_msg: `${username_list} \nOnce you confirm Bolt will:\n 1. Create your monthly subscription\n 2.Invite your group to subscribe`,
+                confirm_msg: `${username_list} \nOnce you confirm Ecosystem will:\n 1. Create your monthly subscription\n 2.Invite your group to subscribe`,
               });
               this.setState({
                 confirm_ttl:
@@ -152,7 +152,7 @@ class Pack extends React.Component {
     const {uid} = this.props;
     this.setState({imgUrl: url});
     this.setState({
-      confirm_msg: `Once you confirm, Bolt will create your monthly subscription,
+      confirm_msg: `Once you confirm, Ecosystem will create your monthly subscription,
     with payments taken on 1st of each month.\nYour concierge will assist you with anything help you need.\n`,
     });
     this.setState({
@@ -576,4 +576,7 @@ function mapStateToProps(state) {
     uid: state.uid,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Pack);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Pack);

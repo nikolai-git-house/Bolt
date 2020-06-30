@@ -74,7 +74,7 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    enableHermes: false
+    enableHermes: true
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -104,6 +104,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    configurations { 
+        implementation.exclude group: 'org.jetbrains', module: 'annotations' 
+    }
+
     defaultConfig {
         applicationId "com.pin.ecosystem"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -128,13 +132,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('release.keystore')
+            storePassword 'android'
+            keyAlias 'androidreleasekey'
+            keyPassword 'android'
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

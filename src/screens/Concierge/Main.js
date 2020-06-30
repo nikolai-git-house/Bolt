@@ -209,7 +209,7 @@ class Main extends React.Component {
           style={{zIndex: 100, marginTop: 100}}
           ref={r => (this.webview = r)}
           originWhitelist={['*']}
-          source={{uri: `https://aiconcierge.io?uid=${uid}`}}
+          source={{uri: `https://aiconcierge.firebaseapp.com/?uid=${uid}`}}
           onMessage={event => this.onEventHandler(event.nativeEvent.data)}
           startInLoadingState
           javaScriptEnabled
@@ -308,4 +308,7 @@ function mapStateToProps(state) {
     reset: state.reset,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Main);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Main);

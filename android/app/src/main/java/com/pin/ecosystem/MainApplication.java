@@ -36,7 +36,6 @@ public class MainApplication extends Application implements ReactApplication {
             new FidelPackage(),
             new BubbleMessagePackage(),
               new RNFirebasePackage(),
-            new RNFetchBlobPackage(),
             new RNGestureHandlerPackage(),
             new RNCWebViewPackage()
       );

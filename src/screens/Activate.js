@@ -143,7 +143,7 @@ class Activate extends React.Component {
             <Logo />
             <View style={Styles.JoinProfileContainer}>
               <Text style={[Styles.Title, {color: colors.darkblue}]}>
-                Join Bolt
+                Join Ecosystem
               </Text>
               <Image
                 source={require('../assets/Landing/join_bolt.png')}
@@ -256,4 +256,7 @@ function mapStateToProps(state) {
     basic: state.basic,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Activate);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Activate);

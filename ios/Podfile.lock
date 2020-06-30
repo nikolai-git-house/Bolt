@@ -254,9 +254,9 @@ PODS:
   - React-jsinspector (0.61.4)
   - react-native-image-picker (0.27.2):
     - React
-  - react-native-image-resizer (1.0.1):
+  - react-native-image-resizer (1.1.0):
     - React
-  - react-native-webview (7.5.1):
+  - react-native-webview (7.5.2):
     - React
   - React-RCTActionSheet (0.61.4):
     - React-Core/RCTActionSheetHeaders (= 0.61.4)
@@ -304,7 +304,7 @@ PODS:
     - Fabric
     - Firebase/Core
     - React
-  - RNGestureHandler (1.5.2):
+  - RNGestureHandler (1.6.1):
     - React
   - RNReanimated (1.4.0):
     - React
@@ -480,7 +480,7 @@ SPEC CHECKSUMS:
   ReactCommon: eb96b70a2a5bed775e919151fd77699fed52944c
   rn-fetch-blob: e10cd24d6b0e116d1ecfcd0d0b4c3936f8336f97
   RNFirebase: ca408d6bee0ca9383bd0cfe84f40b01370b8ad4d
-  RNGestureHandler: 311e3b1cef021a7c9ef31e97e7dc31970cc6288d
+  RNGestureHandler: 123c4bb46136077e390cc308a432029a1c1f47e5
   RNReanimated: 438b025d37de68a20188ead653ad5a5050b65990
   RNScreens: 354046589421edc3d83d5c6212475bf1fb9a731d
   RNSound: 53c06172b3e470011825612a95da302e1913ee72

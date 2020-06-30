@@ -91,7 +91,7 @@ class SubscriptionProfile extends React.Component {
       token_data = await createToken(card_number, exp_month, exp_year, cvc);
       let token = token_data.data.id;
       console.log('token', token);
-      let description = 'BoltBot Charge for ' + name;
+      let description = 'EcosystemBot Charge for ' + name;
       customer_data = await createCustomer(description, email, token);
       let customer_id = customer_data.data.id;
       console.log('customer_id', customer_id);
