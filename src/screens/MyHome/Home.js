@@ -326,7 +326,7 @@ class HomeProfile extends React.Component {
                     />
                     <Text style={{fontSize: 16}}>Home Pack</Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={
                       homepack == 'Activate' ? styles.CtoA : styles.CtoA_Clk
                     }
@@ -335,7 +335,7 @@ class HomeProfile extends React.Component {
                     <Text style={{fontSize: 14, color: colors.darkblue}}>
                       {homepack}
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
                 <StickItem
                   value="Ai Home chatbot"
@@ -603,4 +603,7 @@ function mapStateToProps(state) {
     home: state.home,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(HomeProfile);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(HomeProfile);

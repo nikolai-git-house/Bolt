@@ -68,22 +68,22 @@ class Landing extends React.Component {
                 onPress={() => this.navigateTo('Toggle', {page: 'membership'})}
               />
             )}
-            <PrimaryPackage
+            {/* <PrimaryPackage
               style="perks"
               title="Explore Your Perks"
-              onPress={() => this.navigateTo('Toggle', {page: 'perks'})}
-            />
-            <PrimaryPackage
+              // onPress={() => this.navigateTo('Toggle', {page: 'perks'})}
+            /> */}
+            {/* <PrimaryPackage
               style="shop"
               title="Browse The Store"
               onPress={() => this.navigateTo('Toggle', {page: 'shop'})}
-            />
-            <SecondaryPackage
+            /> */}
+            {/* <SecondaryPackage
               title="Most Popular"
               subTitle="Membership"
               img={health_img}
               onPress={() => this.navigateTo('Toggle')}
-            />
+            /> */}
             <SecondaryPackage
               title="Top perk"
               subTitle="Free Bike Hire"
@@ -135,4 +135,7 @@ function mapStateToProps(state) {
     basic: state.basic,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Landing);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Landing);

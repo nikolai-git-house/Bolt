@@ -331,7 +331,7 @@ class PetsProfile extends React.Component {
                     />
                     <Text style={{fontSize: 16}}>Pet Pack</Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={
                       !this.isPetPackActive() ? styles.CtoA : styles.CtoA_Clk
                     }
@@ -340,7 +340,7 @@ class PetsProfile extends React.Component {
                     <Text style={{fontSize: 14, color: colors.darkblue}}>
                       Activate
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </View>
               <Text style={styles.Title}>Tell us about your pet</Text>
@@ -509,4 +509,7 @@ function mapStateToProps(state) {
     pet: state.pet,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(PetsProfile);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(PetsProfile);

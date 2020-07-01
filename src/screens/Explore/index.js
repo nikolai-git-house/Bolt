@@ -30,9 +30,9 @@ export default createStackNavigator(
     Pack: {
       screen: Pack,
     },
-    PaymentSetup: {
-      screen: PaymentSetup,
-    },
+    // PaymentSetup: {
+    //   screen: PaymentSetup,
+    // },
   },
   {
     headerMode: 'none',
