@@ -108,6 +108,9 @@ function mapStateToProps(state) {
     screen: state.screen,
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Profile);
 
 // export default StackNavigator;

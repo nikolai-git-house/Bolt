@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   Platform,
   StyleSheet,
@@ -6,27 +6,27 @@ import {
   AsyncStorage,
   View,
   TouchableOpacity,
-  Image
-} from "react-native";
-import colors from "../theme/Colors";
+  Image,
+} from 'react-native';
+import colors from '../theme/Colors';
 
 export default class Bubble extends React.Component {
   render() {
     return (
       <Image
         style={Styles.logoContainer}
-        resizeMode={"contain"}
-        source={require("../assets/logo.png")}
+        resizeMode={'contain'}
+        source={require('../assets/logo.png')}
       />
     );
   }
 }
 const Styles = StyleSheet.create({
   logoContainer: {
-    position: "absolute",
+    position: 'absolute',
     width: 85,
-    height: 30,
-    top: 35,
-    alignItems: "center"
-  }
+    height: 35,
+    top: 40,
+    alignItems: 'center',
+  },
 });

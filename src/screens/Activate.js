@@ -150,9 +150,9 @@ class Activate extends React.Component {
                 style={{width: 80, height: 80}}
               />
               <Text style={[Styles.SubTitle, {color: colors.darkblue}]}>
-                Take a profile test (6 mins){'\n'} Insider perks, savings &
-                packages
-                {'\n'} Access the best properties
+                Insider access, perks savings & subscriptions. Earn tokens to
+                spend on all walks of life. Own your life & data with your
+                blockchain iD. Live your best life with the help of community.
               </Text>
               <TouchableOpacity
                 onPress={this.joinMember}
@@ -219,16 +219,13 @@ const Styles = StyleSheet.create({
   JoinProfileContainer: {
     backgroundColor: colors.grey,
     borderRadius: 10,
-    height: '45%',
+    height: '55%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around',
     color: colors.darkblue,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
+    padding: 20,
     marginLeft: 10,
     marginRight: 10,
     borderWidth: 0.5,

@@ -75,9 +75,9 @@ class Landing extends React.Component {
               style={{width: 60, height: 60}}
             />
             <Text style={[Styles.SubTitle, {color: colors.darkblue}]}>
-              Take a profile test (6 mins){'\n'} Insider perks, savings &
-              packages
-              {'\n'} Access the best properties
+              Insider access, perks savings & subscriptions. Earn tokens to
+              spend on all walks of life. Own your life & data with your
+              blockchain iD. Live your best life with the help of community.
             </Text>
             <TouchableOpacity
               onPress={this.joinMember}
@@ -139,13 +139,14 @@ const Styles = StyleSheet.create({
   JoinProfileContainer: {
     backgroundColor: colors.grey,
     borderRadius: 10,
-    height: 250,
+    height: 280,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around',
     color: colors.darkblue,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
     margin: 10,
     borderWidth: 0.5,
     borderColor: colors.cardborder,
