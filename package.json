@@ -41,7 +41,7 @@
     "react-native-phone-input": "^0.2.4",
     "react-native-picker-select": "^6.2.0",
     "react-native-popup-dialog": "^0.16.6",
-    "react-native-reanimated": "^1.4.0",
+    "react-native-reanimated": "^2.10.0",
     "react-native-screens": "^1.0.0-alpha.23",
     "react-native-searchable-dropdown": "^1.0.6",
     "react-native-segment-tab": "^0.1.1",
